@@ -1,0 +1,124 @@
+.app-shell {
+  min-height: 100dvh;
+  padding: 48px 20px 64px;
+  color: #f3efe7;
+  background:
+    radial-gradient(circle at top, rgba(217, 154, 78, 0.18), transparent 30%),
+    linear-gradient(180deg, #0a1016 0%, #101b28 45%, #091017 100%);
+}
+
+.app-hero,
+.app-section {
+  width: min(1200px, 100%);
+  margin: 0 auto;
+}
+
+.app-hero {
+  margin-bottom: 36px;
+}
+
+.app-eyebrow,
+.app-section__label {
+  margin: 0 0 12px;
+  color: #ffbf69;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.78rem;
+}
+
+.app-hero h1,
+.app-section__header h2,
+.app-card__copy h3 {
+  margin: 0;
+}
+
+.app-hero h1 {
+  max-width: 12ch;
+  font-size: clamp(2.5rem, 5vw, 4.8rem);
+  line-height: 0.94;
+}
+
+.app-intro,
+.app-card__copy p,
+.app-feedback-card p,
+.app-feedback-note {
+  color: rgba(243, 239, 231, 0.8);
+}
+
+.app-intro {
+  max-width: 62ch;
+  margin: 18px 0 0;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.app-section {
+  margin-top: 40px;
+}
+
+.app-section__header {
+  margin-bottom: 18px;
+}
+
+.app-section__header h2 {
+  font-size: clamp(1.6rem, 2.4vw, 2.4rem);
+}
+
+.app-grid {
+  display: grid;
+  gap: 24px;
+}
+
+.app-card,
+.app-feedback-card {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 28px;
+  background: rgba(8, 13, 19, 0.78);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(10px);
+}
+
+.app-card {
+  padding: 20px;
+}
+
+.app-card__copy {
+  margin-bottom: 18px;
+}
+
+.app-card__copy h3 {
+  font-size: 1.4rem;
+}
+
+.app-card__copy p {
+  margin: 10px 0 0;
+  line-height: 1.6;
+}
+
+.app-feedback-card {
+  width: min(1200px, 100%);
+  margin: 24px auto 0;
+  padding: 18px 20px;
+}
+
+.app-feedback-card--error {
+  border-color: rgba(255, 107, 107, 0.35);
+  background: rgba(62, 14, 14, 0.42);
+}
+
+.app-feedback-card p,
+.app-feedback-note {
+  margin: 0;
+}
+
+.app-feedback-note {
+  margin-top: 8px;
+  font-size: 0.95rem;
+}
+
+@media (min-width: 900px) {
+  .app-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}

@@ -1,0 +1,196 @@
+import { useEffect, useRef, useState } from 'react';
+import './WebGLGamePlayer.css';
+
+const DEFAULT_ASPECT_RATIOS = {
+  portrait: '9 / 16',
+  landscape: '16 / 9',
+};
+
+function getViewportState() {
+  return {
+    width: window.innerWidth,
+    height: window.innerHeight,
+    isMobileLike: window.matchMedia('(pointer: coarse)').matches || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent),
+  };
+}
+
+function parseAspectRatio(aspectRatio) {
+  if (typeof aspectRatio === 'number' && aspectRatio > 0) {
+    return aspectRatio;
+  }
+
+  if (typeof aspectRatio !== 'string') {
+    return null;
+  }
+
+  const parts = aspectRatio.split(/[:/]/).map((value) => Number(value.trim()));
+
+  if (parts.length !== 2 || !parts[0] || !parts[1]) {
+    return null;
+  }
+
+  return parts[0] / parts[1];
+}
+
+function getDefaultLoadingScreenUrl(gameUrl) {
+  if (typeof gameUrl !== 'string' || !gameUrl.endsWith('/index.html')) {
+    return '';
+  }
+
+  return `${gameUrl.slice(0, -'/index.html'.length)}/loading_screen.png`;
+}
+
+function WebGLGamePlayer({
+  gameUrl,
+  title = "WebGL Game",
+  mode = "landscape",
+  thumbnailMode,
+  aspectRatio,
+  loadingScreenUrl,
+}) {
+  const containerRef = useRef(null);
+  const hasStartedRef = useRef(false);
+  const isMobileLikeRef = useRef(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
+  const [viewportSize, setViewportSize] = useState(() => getViewportState());
+  const isPortraitViewport = viewportSize.height > viewportSize.width;
+  const resolvedPreviewAspectRatio =
+    DEFAULT_ASPECT_RATIOS[thumbnailMode ?? mode] ?? DEFAULT_ASPECT_RATIOS.landscape;
+  const resolvedGameplayAspectRatio = aspectRatio ?? DEFAULT_ASPECT_RATIOS[mode] ?? DEFAULT_ASPECT_RATIOS.landscape;
+  const aspectRatioValue = parseAspectRatio(resolvedGameplayAspectRatio) ?? (mode === 'portrait' ? 9 / 16 : 16 / 9);
+  const shouldRotateFullscreen = isFullscreen && isPortraitViewport && mode === 'landscape';
+  const resolvedLoadingScreenUrl = loadingScreenUrl ?? getDefaultLoadingScreenUrl(gameUrl);
+  const frameStyle = {};
+
+  if (isFullscreen) {
+    const viewportWidth = viewportSize.width;
+    const viewportHeight = viewportSize.height;
+
+    if (mode === 'portrait') {
+      const fittedWidth = viewportWidth;
+      const fittedHeight = Math.min(viewportHeight, fittedWidth / aspectRatioValue);
+      frameStyle.width = `${fittedWidth}px`;
+      frameStyle.height = `${fittedHeight}px`;
+    } else if (shouldRotateFullscreen) {
+      const fittedHeight = Math.min(viewportWidth, viewportHeight / aspectRatioValue);
+      frameStyle.width = `${fittedHeight * aspectRatioValue}px`;
+      frameStyle.height = `${fittedHeight}px`;
+    } else {
+      const fittedHeight = viewportHeight;
+      const fittedWidth = Math.min(viewportWidth, fittedHeight * aspectRatioValue);
+      frameStyle.width = `${fittedWidth}px`;
+      frameStyle.height = `${fittedHeight}px`;
+    }
+  }
+
+  useEffect(() => {
+    hasStartedRef.current = hasStarted;
+  }, [hasStarted]);
+
+  useEffect(() => {
+    isMobileLikeRef.current = viewportSize.isMobileLike;
+  }, [viewportSize.isMobileLike]);
+
+  function stopGame() {
+    setHasStarted(false);
+    setIsFullscreen(false);
+  }
+
+  useEffect(() => {
+    function updateViewportOrientation() {
+      setViewportSize(getViewportState());
+    }
+
+    function handleFullscreenChange() {
+      const isContainerFullscreen = document.fullscreenElement === containerRef.current;
+      setIsFullscreen(isContainerFullscreen);
+
+      if (!isContainerFullscreen) {
+        window.screen.orientation?.unlock?.();
+
+        if (isMobileLikeRef.current && hasStartedRef.current) {
+          stopGame();
+        }
+      }
+    }
+
+    window.addEventListener('resize', updateViewportOrientation);
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+
+    return () => {
+      window.removeEventListener('resize', updateViewportOrientation);
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  async function startGame() {
+    const container = containerRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    setHasStarted(true);
+
+    try {
+      await container.requestFullscreen?.();
+
+      if (window.screen.orientation?.lock) {
+        try {
+          await window.screen.orientation.lock(mode === 'portrait' ? 'portrait' : 'landscape');
+        } catch {
+          // Some browsers only allow rotation guidance via CSS.
+        }
+      }
+    } catch {
+      // Ignore fullscreen rejections caused by browser permissions or user settings.
+    }
+  }
+
+  return (
+    <section
+      ref={containerRef}
+      className={`webgl-game-player${isFullscreen ? ' webgl-game-player--fullscreen' : ''}${shouldRotateFullscreen ? ' webgl-game-player--rotated' : ''}`}
+      style={{
+        '--webgl-game-aspect-ratio': isFullscreen ? resolvedGameplayAspectRatio : resolvedPreviewAspectRatio,
+        '--webgl-game-background-image': !hasStarted && resolvedLoadingScreenUrl
+          ? `linear-gradient(rgba(10, 10, 12, 0.22), rgba(10, 10, 12, 0.42)), url("${resolvedLoadingScreenUrl}")`
+          : 'none',
+      }}
+    >
+      {!hasStarted && (
+        <button
+          type="button"
+          className="webgl-game-player__fullscreen-toggle"
+          onClick={startGame}
+          aria-label={`Play ${title} in fullscreen`}
+        >
+          <span className="webgl-game-player__fullscreen-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false">
+              <path d="M4 9V4h5v2H6v3H4Zm10-5h6v6h-2V6h-4V4ZM4 20v-6h2v4h3v2H4Zm14-2v-4h2v6h-6v-2h4Z" />
+            </svg>
+          </span>
+          <span className="webgl-game-player__fullscreen-label">Play Fullscreen</span>
+        </button>
+      )}
+      {hasStarted && (
+        <iframe
+          className="webgl-game-player__frame"
+          src={gameUrl}
+          title={title}
+          scrolling="no"
+          allowFullScreen
+          style={frameStyle}
+        />
+      )}
+      {hasStarted && shouldRotateFullscreen && (
+        <p className="webgl-game-player__fullscreen-hint">
+          Rotated for portrait screens.
+        </p>
+      )}
+    </section>
+  );
+}
+
+export default WebGLGamePlayer;
