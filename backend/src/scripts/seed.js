@@ -1,5 +1,5 @@
 import { connectDatabase, disconnectDatabase } from '../config/database.js'
-import { seedDatabase } from '../services/contentService.js'
+import { seedDatabase } from '../controllers/contentController.js'
 
 try {
   await connectDatabase()

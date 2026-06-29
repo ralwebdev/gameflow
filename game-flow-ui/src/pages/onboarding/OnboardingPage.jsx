@@ -9,7 +9,7 @@ import slide3 from '../../assets/an.jpg';
 
 const OnboardingPage = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { loginGuest } = useAuth();
   const [selected, setSelected] = useState('creator');
   const [visible, setVisible] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
@@ -26,10 +26,11 @@ const OnboardingPage = () => {
   }, [slides.length]);
 
   const handleContinue = () => {
+    localStorage.setItem('cv_onboarding_completed', 'true');
     if (selected === 'creator') {
       navigate('/signup');
     } else {
-      login('guest');
+      loginGuest();
       navigate('/app/home');
     }
   };

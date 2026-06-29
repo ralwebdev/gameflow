@@ -38,7 +38,7 @@ const BANNER = 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d7
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const { isGuest, logout } = useAuth();
+  const { isGuest, logout, user } = useAuth();
   
   // Default visible tabs
   const [activeTab, setActiveTab] = useState('Projects'); // 'Projects' | 'Reels' | 'Saved' | 'Models' | 'Games' | 'About'
@@ -55,6 +55,9 @@ const ProfilePage = () => {
     if (isGuest) { handleGuestAction('Like projects'); return; }
     setLikedMap(prev => ({ ...prev, [id]: !prev[id] }));
   };
+
+  const displayName = user?.name || 'Zara Neon';
+  const handleName = user?.username ? `@${user.username}` : '@zaraneon';
 
   const visibleSkills = SKILLS.slice(0, 3);
   const remainingSkillsCount = SKILLS.length - 3;
@@ -181,7 +184,7 @@ const ProfilePage = () => {
           <div style={{ position: 'relative', width: 84, height: 84, marginBottom: 12 }}>
             <img
               src={AVATAR}
-              alt="Zara Neon"
+              alt={displayName}
               style={{
                 width: '100%',
                 height: '100%',
@@ -211,8 +214,8 @@ const ProfilePage = () => {
           </div>
 
           {/* Profile Identity */}
-          <h1 style={{ fontSize: 20, fontWeight: 800, margin: '0 0 2px', letterSpacing: -0.4 }}>Zara Neon</h1>
-          <p style={{ fontSize: 13, color: '#FF7A59', margin: '0 0 6px', fontWeight: 600 }}>@zaraneon</p>
+          <h1 style={{ fontSize: 20, fontWeight: 800, margin: '0 0 2px', letterSpacing: -0.4 }}>{displayName}</h1>
+          <p style={{ fontSize: 13, color: '#FF7A59', margin: '0 0 6px', fontWeight: 600 }}>{handleName}</p>
           <p style={{ fontSize: 13, color: '#B8C0CC', margin: '0 0 16px', fontWeight: 500 }}>
             Senior Animator · VFX Artist · Dreamer
           </p>

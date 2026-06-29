@@ -1,45 +1,16 @@
 import { Router } from 'express'
-import { getAssets, getGames, getHomepageContent } from '../services/contentService.js'
+import {
+  getContent,
+  getHealth,
+  getPublishedAssets,
+  getPublishedGames,
+} from '../controllers/contentController.js'
 
 const router = Router()
 
-function includeDrafts(request) {
-  return request.query.includeDrafts === 'true'
-}
-
-router.get('/health', (_request, response) => {
-  response.json({
-    status: 'ok',
-    service: 'gameflow-api',
-    timestamp: new Date().toISOString(),
-  })
-})
-
-router.get('/content', async (request, response, next) => {
-  try {
-    const content = await getHomepageContent({ includeDrafts: includeDrafts(request) })
-    response.json(content)
-  } catch (error) {
-    next(error)
-  }
-})
-
-router.get('/games', async (request, response, next) => {
-  try {
-    const games = await getGames({ includeDrafts: includeDrafts(request) })
-    response.json(games)
-  } catch (error) {
-    next(error)
-  }
-})
-
-router.get('/assets', async (request, response, next) => {
-  try {
-    const assets = await getAssets({ includeDrafts: includeDrafts(request) })
-    response.json(assets)
-  } catch (error) {
-    next(error)
-  }
-})
+router.get('/health', getHealth)
+router.get('/content', getContent)
+router.get('/games', getPublishedGames)
+router.get('/assets', getPublishedAssets)
 
 export default router

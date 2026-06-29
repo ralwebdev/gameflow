@@ -133,35 +133,6 @@ const CTA = ({ label, onClick, disabled }) => (
   </button>
 );
 
-// ─── Role Pill ────────────────────────────────────────────────────────────────
-const RolePill = ({ label, selected, onClick }) => (
-  <button
-    role="radio"
-    aria-checked={selected}
-    onClick={onClick}
-    style={{
-      flex: 1,
-      height: 48,
-      background: selected ? T.pillOn : 'rgba(15,23,42,0.6)',
-      backdropFilter: selected ? 'none' : 'blur(12px)',
-      WebkitBackdropFilter: selected ? 'none' : 'blur(12px)',
-      border: `1.5px solid ${selected ? T.pillBorderOn : T.pillBorderOff}`,
-      borderRadius: 100,
-      fontSize: 15,
-      fontWeight: selected ? 700 : 500,
-      color: selected ? '#0B0D12' : 'rgba(255,255,255,0.65)',
-      cursor: 'pointer',
-      letterSpacing: -0.2,
-      outline: 'none',
-      WebkitTapHighlightColor: 'transparent',
-      transition: 'all 0.2s ease',
-      boxShadow: selected ? '0 2px 16px rgba(0,0,0,0.25)' : '0 2px 10px rgba(0,0,0,0.2)',
-    }}
-  >
-    {label}
-  </button>
-);
-
 // ─── OAuth Button ─────────────────────────────────────────────────────────────
 const OAuthButton = ({ label, icon, onClick }) => (
   <button
@@ -215,7 +186,7 @@ const OAuthButton = ({ label, icon, onClick }) => (
 
 const SignUpPage = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { signUp } = useAuth();
   const [step, setStep]             = useState(1);        // 1 | 2
   const [showMoreOAuth, setShowMoreOAuth] = useState(false);
   const [visible, setVisible]       = useState(false);
@@ -225,10 +196,12 @@ const SignUpPage = () => {
   // Step 1
   const [email, setEmail]           = useState('');
   // Step 2
+  const [username, setUsername]     = useState('');
   const [name, setName]             = useState('');
   const [password, setPassword]     = useState('');
   const [showPw, setShowPw]         = useState(false);
-  const [role, setRole]             = useState('creator');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   // Step transition
   const [stepVisible, setStepVisible] = useState(true);
@@ -245,19 +218,33 @@ const SignUpPage = () => {
 
   const goToStep2 = () => {
     if (!email.trim()) return;
+    setErrorMessage('');
     setStepVisible(false);
     setTimeout(() => { setStep(2); setStepVisible(true); }, 220);
   };
 
-  const handleCreate = () => {
-    if (!name.trim() || !password.trim()) return;
-    login(role);
-    navigate('/app/home');
+  const handleCreate = async () => {
+    if (!username.trim() || !name.trim() || password.length < 8 || isSubmitting) return;
+
+    try {
+      setIsSubmitting(true);
+      setErrorMessage('');
+      await signUp({
+        email,
+        username,
+        name,
+        password,
+      });
+      navigate('/app/home');
+    } catch (error) {
+      setErrorMessage(error.message || 'Unable to create your account right now.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleOAuthClick = () => {
-    login('creator');
-    navigate('/app/home');
+    setErrorMessage('OAuth sign-up is not connected yet. Use email, username, and password for now.');
   };
 
   // ── Shared overlay styles ──────────────────────────────────────────────────
@@ -360,6 +347,22 @@ const SignUpPage = () => {
             transition: 'opacity 0.22s ease, transform 0.22s ease',
           }}
         >
+          {errorMessage ? (
+            <div
+              style={{
+                padding: '12px 14px',
+                borderRadius: 16,
+                background: 'rgba(255,122,89,0.14)',
+                border: '1px solid rgba(255,122,89,0.28)',
+                color: '#FFD9CF',
+                fontSize: 13,
+                lineHeight: 1.45,
+              }}
+            >
+              {errorMessage}
+            </div>
+          ) : null}
+
           {step === 1 ? (
             <>
               {/* ── Step 1 ─────────────────────────────────────────────────── */}
@@ -513,6 +516,15 @@ const SignUpPage = () => {
                 </p>
               </div>
 
+              <Field
+                id="signup-username"
+                label="Username"
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                placeholder="Pick a unique username"
+                autoFocus
+              />
+
               {/* Name */}
               <Field
                 id="signup-name"
@@ -520,7 +532,6 @@ const SignUpPage = () => {
                 value={name}
                 onChange={e => setName(e.target.value)}
                 placeholder="How should we call you?"
-                autoFocus
               />
 
               {/* Password */}
@@ -534,22 +545,11 @@ const SignUpPage = () => {
                 rightEl={<EyeBtn visible={showPw} onToggle={() => setShowPw(p => !p)} />}
               />
 
-              {/* Role selection */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <span style={{ fontSize: 12, fontWeight: 600, color: T.textMuted, letterSpacing: 0.6, textTransform: 'uppercase' }}>
-                  I want to
-                </span>
-                <div role="radiogroup" aria-label="Select your role" style={{ display: 'flex', gap: 10 }}>
-                  <RolePill label="Creator"  selected={role === 'creator'}  onClick={() => setRole('creator')} />
-                  <RolePill label="Explorer" selected={role === 'explorer'} onClick={() => setRole('explorer')} />
-                </div>
-              </div>
-
               {/* CTA */}
               <CTA
                 label="Create Account"
                 onClick={handleCreate}
-                disabled={!name.trim() || password.length < 8}
+                disabled={!username.trim() || !name.trim() || password.length < 8 || isSubmitting}
               />
 
               {/* Back link */}

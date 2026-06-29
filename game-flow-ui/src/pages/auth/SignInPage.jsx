@@ -202,13 +202,15 @@ const OAuthButton = ({ label, icon, onClick }) => (
 
 const SignInPage = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
-  const [email,    setEmail]    = useState('');
+  const { signIn } = useAuth();
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showMoreOAuth, setShowMoreOAuth] = useState(false);
   const [showPw,   setShowPw]   = useState(false);
   const [visible,  setVisible]  = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const slides = [slide1, slide2, slide3];
 
   useEffect(() => {
@@ -221,18 +223,29 @@ const SignInPage = () => {
     return () => clearInterval(t);
   }, [slides.length]);
 
-  const handleSignIn = () => {
-    if (!email.trim() || !password.trim()) return;
-    login('creator');
-    navigate('/app/home');
+  const handleSignIn = async () => {
+    if (!username.trim() || !password.trim() || isSubmitting) return;
+
+    try {
+      setIsSubmitting(true);
+      setErrorMessage('');
+      await signIn({
+        username,
+        password,
+      });
+      navigate('/app/home');
+    } catch (error) {
+      setErrorMessage(error.message || 'Unable to sign in right now.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleOAuthClick = () => {
-    login('creator');
-    navigate('/app/home');
+    setErrorMessage('OAuth sign-in is not connected yet. Use username and password for now.');
   };
 
-  const isReady = email.trim().length > 0 && password.length >= 6;
+  const isReady = username.trim().length > 0 && password.length >= 8 && !isSubmitting;
 
   return (
     <div
@@ -359,14 +372,13 @@ const SignInPage = () => {
 
           {/* ── Form group ──────────────────────────────────────────────── */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {/* Email */}
+            {/* Username */}
             <Field
-              id="login-email"
-              label="Email Address"
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              id="login-username"
+              label="Username"
+              value={username}
+              onChange={e => setUsername(e.target.value)}
+              placeholder="Enter your username"
               autoFocus
             />
 
@@ -398,6 +410,22 @@ const SignInPage = () => {
               </div>
             </div>
           </div>
+
+          {errorMessage ? (
+            <div
+              style={{
+                padding: '12px 14px',
+                borderRadius: 16,
+                background: 'rgba(255,122,89,0.14)',
+                border: '1px solid rgba(255,122,89,0.28)',
+                color: '#FFD9CF',
+                fontSize: 13,
+                lineHeight: 1.45,
+              }}
+            >
+              {errorMessage}
+            </div>
+          ) : null}
 
           {/* Primary CTA */}
           <CTA label="Sign In" onClick={handleSignIn} disabled={!isReady} />

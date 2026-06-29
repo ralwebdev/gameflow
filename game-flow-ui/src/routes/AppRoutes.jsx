@@ -24,7 +24,11 @@ import CreatorProfilePage from '../pages/app/CreatorProfilePage';
 import NotFoundPage from '../pages/app/NotFoundPage';
 
 const AppRoutes = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return null;
+  }
 
   return (
     <Routes>
@@ -32,7 +36,13 @@ const AppRoutes = () => {
       <Route
         path="/"
         element={
-          isAuthenticated ? <Navigate to="/app/home" replace /> : <Navigate to="/onboarding" replace />
+          isAuthenticated ? (
+            <Navigate to="/app/home" replace />
+          ) : localStorage.getItem('cv_onboarding_completed') === 'true' ? (
+            <Navigate to="/signin" replace />
+          ) : (
+            <Navigate to="/onboarding" replace />
+          )
         }
       />
 

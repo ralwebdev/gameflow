@@ -1,7 +1,7 @@
 import app from './app.js'
 import { connectDatabase, disconnectDatabase } from './config/database.js'
 import env from './config/env.js'
-import { seedDatabase } from './services/contentService.js'
+import { seedDatabase } from './controllers/contentController.js'
 
 let server
 

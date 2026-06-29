@@ -1,0 +1,111 @@
+import User from '../models/User.js'
+import asyncHandler from '../middlewares/asyncHandler.js'
+import { generateToken } from '../utils/generateToken.js'
+
+const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 7
+
+function createError(statusCode, message) {
+  const error = new Error(message)
+  error.statusCode = statusCode
+  return error
+}
+
+function sanitizeUser(user) {
+  return {
+    id: String(user._id),
+    email: user.email,
+    username: user.username,
+    name: user.name,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+  }
+}
+
+function buildAuthPayload(user) {
+  const expiresAt = Date.now() + SESSION_DURATION_MS
+
+  return {
+    token: generateToken({
+      sub: String(user._id),
+      exp: expiresAt,
+    }),
+    user: sanitizeUser(user),
+    expiresAt,
+  }
+}
+
+export const signupUser = asyncHandler(async (request, response) => {
+  const { email, username, name, password } = request.body ?? {}
+
+  if (!String(email).trim()) {
+    throw createError(400, 'Email is required.')
+  }
+
+  if (!String(username).trim()) {
+    throw createError(400, 'Username is required.')
+  }
+
+  if (!String(name).trim()) {
+    throw createError(400, 'Name is required.')
+  }
+
+  if (!String(password)) {
+    throw createError(400, 'Password is required.')
+  }
+
+  if (String(password).length < 8) {
+    throw createError(400, 'Password must be at least 8 characters long.')
+  }
+
+  const normalizedEmail = String(email).trim().toLowerCase()
+  const normalizedUsername = String(username).trim().toLowerCase()
+
+  const existingEmailUser = await User.findOne({ email: normalizedEmail }).lean()
+
+  if (existingEmailUser) {
+    throw createError(409, 'An account with that email already exists.')
+  }
+
+  const existingUsernameUser = await User.findOne({ username: normalizedUsername }).lean()
+
+  if (existingUsernameUser) {
+    throw createError(409, 'That username is already taken.')
+  }
+
+  const user = await User.create({
+    email: normalizedEmail,
+    username: normalizedUsername,
+    name: String(name).trim(),
+    password,
+  })
+
+  response.status(201).json(buildAuthPayload(user))
+})
+
+export const signinUser = asyncHandler(async (request, response) => {
+  const { username, password } = request.body ?? {}
+
+  if (!String(username).trim() || !String(password)) {
+    throw createError(400, 'Username and password are required.')
+  }
+
+  const user = await User.findOne({ username: String(username).trim().toLowerCase() })
+
+  if (!user) {
+    throw createError(401, 'Invalid username or password.')
+  }
+
+  const passwordMatches = await user.matchPassword(password)
+
+  if (!passwordMatches) {
+    throw createError(401, 'Invalid username or password.')
+  }
+
+  response.json(buildAuthPayload(user))
+})
+
+export const getCurrentUser = asyncHandler(async (request, response) => {
+  response.json({
+    user: sanitizeUser(request.user),
+  })
+})

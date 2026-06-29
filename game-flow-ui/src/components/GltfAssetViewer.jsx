@@ -250,7 +250,7 @@ function GltfAssetViewer({
         mountNode.removeChild(renderer.domElement)
       }
     }
-  }, [activeBackground, activeModelUrl])
+  }, [activeAsset?.textures, activeBackground, activeModelUrl])
 
   return (
     <section
