@@ -16,6 +16,10 @@ function sanitizeUser(user) {
     email: user.email,
     username: user.username,
     name: user.name,
+    headline: user.headline,
+    skills: user.skills,
+    avatar: user.avatar,
+    banner: user.banner,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   }
@@ -107,5 +111,78 @@ export const signinUser = asyncHandler(async (request, response) => {
 export const getCurrentUser = asyncHandler(async (request, response) => {
   response.json({
     user: sanitizeUser(request.user),
+  })
+})
+
+export const updateCurrentUserProfile = asyncHandler(async (request, response) => {
+  const { email, username, name, headline, skills, avatar, banner } = request.body ?? {}
+
+  if (name !== undefined && !String(name).trim()) {
+    throw createError(400, 'Name cannot be empty.')
+  }
+
+  if (email !== undefined && !String(email).trim()) {
+    throw createError(400, 'Email cannot be empty.')
+  }
+
+  if (username !== undefined && !String(username).trim()) {
+    throw createError(400, 'Username cannot be empty.')
+  }
+
+  const user = await User.findById(request.user._id)
+
+  if (!user) {
+    throw createError(404, 'User not found.')
+  }
+
+  if (email !== undefined) {
+    const normalizedEmail = String(email).trim().toLowerCase()
+
+    if (normalizedEmail !== user.email) {
+      const existingEmailUser = await User.findOne({
+        email: normalizedEmail,
+        _id: { $ne: user._id },
+      }).lean()
+
+      if (existingEmailUser) {
+        throw createError(409, 'An account with that email already exists.')
+      }
+    }
+
+    user.email = normalizedEmail
+  }
+
+  if (username !== undefined) {
+    const normalizedUsername = String(username).trim().toLowerCase()
+
+    if (normalizedUsername !== user.username) {
+      const existingUsernameUser = await User.findOne({
+        username: normalizedUsername,
+        _id: { $ne: user._id },
+      }).lean()
+
+      if (existingUsernameUser) {
+        throw createError(409, 'That username is already taken.')
+      }
+    }
+
+    user.username = normalizedUsername
+  }
+
+  if (name !== undefined) user.name = String(name).trim()
+  if (headline !== undefined) user.headline = String(headline).trim()
+  if (skills !== undefined) {
+    user.skills = Array.isArray(skills)
+      ? skills.map((skill) => String(skill).trim()).filter(Boolean)
+      : []
+  }
+  if (avatar !== undefined) user.avatar = String(avatar)
+  if (banner !== undefined) user.banner = String(banner)
+
+  await user.save()
+
+  response.json({
+    message: 'Profile updated successfully',
+    user: sanitizeUser(user),
   })
 })

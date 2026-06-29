@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import {
   clearStoredSession,
   fetchCurrentUser,
@@ -9,6 +9,7 @@ import {
   persistGuestSession,
   signIn as signInRequest,
   signUp as signUpRequest,
+  updateProfile as updateProfileRequest,
 } from '../lib/auth';
 
 const AuthContext = createContext(null);
@@ -21,6 +22,21 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => getStoredUser());
   const [token, setToken] = useState(() => getStoredToken());
   const [isLoading, setIsLoading] = useState(() => Boolean(getStoredToken()));
+
+  const refreshCurrentUser = useCallback(
+    async (activeToken = token) => {
+      if (!activeToken) {
+        return null;
+      }
+
+      const data = await fetchCurrentUser(activeToken);
+      persistAuthSession({ token: activeToken, user: data.user });
+      setUser(data.user);
+
+      return data.user;
+    },
+    [token],
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -36,14 +52,12 @@ export const AuthProvider = ({ children }) => {
       }
 
       try {
-        const data = await fetchCurrentUser(storedToken);
+        await refreshCurrentUser(storedToken);
 
         if (!isMounted) {
           return;
         }
 
-        persistAuthSession({ token: storedToken, user: data.user });
-        setUser(data.user);
         setToken(storedToken);
         setIsAuthenticated(true);
         setIsGuest(false);
@@ -69,7 +83,7 @@ export const AuthProvider = ({ children }) => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [refreshCurrentUser]);
 
   const loginGuest = () => {
     persistGuestSession();
@@ -115,6 +129,19 @@ export const AuthProvider = ({ children }) => {
     setIsLoading(false);
   };
 
+  const updateProfile = async (profileData) => {
+    const data = await updateProfileRequest(token, profileData);
+    const nextUser = data.user;
+
+    persistAuthSession({ token, user: nextUser });
+    setUser(nextUser);
+
+    // Dispatch event to notify components of the update
+    window.dispatchEvent(new CustomEvent('profileUpdated', { detail: nextUser }));
+
+    return nextUser;
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -127,6 +154,8 @@ export const AuthProvider = ({ children }) => {
         signIn,
         signUp,
         logout,
+        updateProfile,
+        refreshCurrentUser,
       }}
     >
       {children}

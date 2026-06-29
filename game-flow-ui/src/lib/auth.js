@@ -43,12 +43,14 @@ export function clearStoredSession() {
 }
 
 async function request(path, options = {}) {
+  const { headers: extraHeaders, ...restOptions } = options
+
   const response = await fetch(`${API_BASE_URL}${path}`, {
     headers: {
       'Content-Type': 'application/json',
-      ...(options.headers ?? {}),
+      ...(extraHeaders ?? {}),
     },
-    ...options,
+    ...restOptions,
   })
 
   const data = await response.json().catch(() => ({}))
@@ -79,5 +81,15 @@ export async function fetchCurrentUser(token) {
     headers: {
       Authorization: `Bearer ${token}`,
     },
+  })
+}
+
+export async function updateProfile(token, profileData) {
+  return request('/auth/profile', {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(profileData),
   })
 }

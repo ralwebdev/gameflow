@@ -1,0 +1,83 @@
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
+
+async function request(path, options = {}) {
+  const { headers: extraHeaders, body: rawBody, ...restOptions } = options
+
+  const isJsonBody =
+    rawBody !== undefined &&
+    rawBody !== null &&
+    typeof rawBody !== 'string' &&
+    !(rawBody instanceof FormData) &&
+    !(rawBody instanceof ArrayBuffer) &&
+    !(ArrayBuffer.isView(rawBody))
+
+  const body = isJsonBody ? JSON.stringify(rawBody) : rawBody
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    headers: {
+      ...(isJsonBody ? { 'Content-Type': 'application/json' } : {}),
+      ...(extraHeaders ?? {}),
+    },
+    body,
+    ...restOptions,
+  })
+
+  const data = await response.json().catch(() => ({}))
+
+  if (!response.ok) {
+    throw new Error(data?.message || 'Request failed.')
+  }
+
+  return data
+}
+
+export async function fetchContent() {
+  return request('/content')
+}
+
+export async function fetchProject(projectId) {
+  return request(`/projects/${encodeURIComponent(projectId)}`)
+}
+
+export async function createProject(token, payload) {
+  return request('/projects', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: payload,
+  })
+}
+
+export async function uploadProjectFile(token, projectId, fileMeta, file) {
+  const body = await file.arrayBuffer()
+
+  const response = await fetch(`${API_BASE_URL}/projects/${encodeURIComponent(projectId)}/files`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/octet-stream',
+      'X-File-Name': fileMeta.name,
+      'X-Relative-Path': fileMeta.relativePath,
+      'X-Mime-Type': fileMeta.mimeType || file.type || 'application/octet-stream',
+    },
+    body,
+  })
+
+  const data = await response.json().catch(() => ({}))
+
+  if (!response.ok) {
+    throw new Error(data?.message || 'Request failed.')
+  }
+
+  return data
+}
+
+export async function publishProject(token, projectId) {
+  return request(`/projects/${encodeURIComponent(projectId)}/publish`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+}

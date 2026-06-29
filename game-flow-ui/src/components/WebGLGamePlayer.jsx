@@ -47,6 +47,7 @@ function WebGLGamePlayer({
   thumbnailMode,
   aspectRatio,
   loadingScreenUrl,
+  isActive = true,
 }) {
   const containerRef = useRef(null);
   const hasStartedRef = useRef(false);
@@ -96,6 +97,12 @@ function WebGLGamePlayer({
     setHasStarted(false);
     setIsFullscreen(false);
   }
+
+  useEffect(() => {
+    if (!isActive) {
+      stopGame();
+    }
+  }, [isActive]);
 
   useEffect(() => {
     function updateViewportOrientation() {

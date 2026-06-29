@@ -1,8 +1,10 @@
 import { NavLink } from 'react-router-dom';
 import { HomeIcon, ExploreIcon, BellIcon, ProfileIcon, PlusIcon } from '../icons/Icons';
+import { useAuth } from '../../context/AuthContext';
 import './BottomNav.css';
 
 const BottomNav = () => {
+  const { user } = useAuth();
   const items = [
     { key: 'home',          label: 'Home',          Icon: HomeIcon,        target: '/app/home' },
     { key: 'explore',       label: 'Explore',       Icon: ExploreIcon,     target: '/app/explore' },
@@ -35,7 +37,21 @@ const BottomNav = () => {
               onMouseDown={e => e.currentTarget.style.transform = 'scale(0.92)'}
               onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
             >
-              <item.Icon size={22} />
+              {item.key === 'profile' && user?.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt="Profile"
+                  style={{
+                    width: 24,
+                    height: 24,
+                    borderRadius: '50%',
+                    border: '1.5px solid currentColor',
+                    objectFit: 'cover',
+                  }}
+                />
+              ) : (
+                <item.Icon size={22} />
+              )}
             </NavLink>
           </div>
         );

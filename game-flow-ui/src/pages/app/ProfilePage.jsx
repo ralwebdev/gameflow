@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import GuestBanner from '../../components/layout/GuestBanner';
@@ -8,7 +8,6 @@ import {
   ChevronDownIcon, CubeIcon, AfterEffectsIcon, GameIcon, ZBrushIcon
 } from '../../components/icons/Icons';
 
-/* ─── Local SVG Icons ─────────────────────────────────────── */
 const SettingsIcon = ({ size = 16 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="3" />
@@ -16,51 +15,178 @@ const SettingsIcon = ({ size = 16 }) => (
   </svg>
 );
 
-/* ─── Mock Data ───────────────────────────────────────────── */
-const SKILLS = [
-  { name: 'Blender', icon: <CubeIcon /> },
-  { name: 'After Effects', icon: <AfterEffectsIcon /> },
-  { name: 'Unreal Engine', icon: <GameIcon /> },
-  { name: 'ZBrush', icon: <ZBrushIcon /> },
-];
-
 const PROJECTS = [
   { id: 1, category: '3D Render', image: 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/1bd8db8c4-7446-4905-bbe6-106a3bce5dc2.png', likes: '8.4k', tall: true },
-  { id: 2, category: 'FX',        image: 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/1a26c70d3-6e59-4426-897a-6546a2e98a7e.png', likes: '5.7k', tall: false },
-  { id: 3, category: 'Environment',image: 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/18b6190b4-15eb-4568-9328-53c6d187c8c3.png', likes: '3.1k', tall: false },
-  { id: 4, category: 'VFX',       image: 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/12de9432e-ccf4-418f-a563-5181abb44ff3.png', likes: '19k',  tall: true },
-  { id: 5, category: 'Concept',   image: 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/18be33d7f-6129-4806-a387-7568fee9b096.png', likes: '12k',  tall: false },
-  { id: 6, category: 'Sculpt',    image: 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/1097bcf9c-55f8-4aa3-8544-7e63de8dd465.png', likes: '6.2k', tall: false },
+  { id: 2, category: 'FX', image: 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/1a26c70d3-6e59-4426-897a-6546a2e98a7e.png', likes: '5.7k', tall: false },
+  { id: 3, category: 'Environment', image: 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/18b6190b4-15eb-4568-9328-53c6d187c8c3.png', likes: '3.1k', tall: false },
+  { id: 4, category: 'VFX', image: 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/12de9432e-ccf4-418f-a563-5181abb44ff3.png', likes: '19k', tall: true },
+  { id: 5, category: 'Concept', image: 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/18be33d7f-6129-4806-a387-7568fee9b096.png', likes: '12k', tall: false },
+  { id: 6, category: 'Sculpt', image: 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/1097bcf9c-55f8-4aa3-8544-7e63de8dd465.png', likes: '6.2k', tall: false },
 ];
 
 const AVATAR = 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/19f781f2a-1e76-4c62-8f73-55c5248d45ab.png';
 const BANNER = 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/1097bcf9c-55f8-4aa3-8544-7e63de8dd465.png';
 
+const fieldStyle = {
+  height: 48,
+  borderRadius: 12,
+  background: 'rgba(15, 23, 42, 0.72)',
+  border: '1px solid rgba(255,255,255,0.08)',
+  color: '#FFF',
+  padding: '0 14px',
+  fontSize: 14,
+  outline: 'none',
+};
+
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const { isGuest, logout, user } = useAuth();
-  
-  // Default visible tabs
-  const [activeTab, setActiveTab] = useState('Projects'); // 'Projects' | 'Reels' | 'Saved' | 'Models' | 'Games' | 'About'
+  const { isGuest, logout, user, updateProfile } = useAuth();
+  const [activeTab, setActiveTab] = useState('Projects');
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [toast, setToast] = useState(null);
+  const [toastMsg, setToastMsg] = useState(null);
   const [likedMap, setLikedMap] = useState({});
+  const [isEditing, setIsEditing] = useState(false);
+  const [editEmail, setEditEmail] = useState('');
+  const [editUsername, setEditUsername] = useState('');
+  const [editName, setEditName] = useState('');
+  const [editHeadline, setEditHeadline] = useState('');
+  const [editSkills, setEditSkills] = useState('');
+  const [editAvatar, setEditAvatar] = useState('');
+  const [editBanner, setEditBanner] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    let timeoutId = null;
+
+    const handleProfileUpdate = () => {
+      setToastMsg('Profile updated successfully!');
+      timeoutId = window.setTimeout(() => setToastMsg(null), 3000);
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+    return () => {
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+      }
+
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+    };
+  }, []);
 
   const handleGuestAction = (actionName) => {
     setToast({ action: actionName });
   };
 
-  const handleLike = (id, e) => {
-    e.stopPropagation();
-    if (isGuest) { handleGuestAction('Like projects'); return; }
-    setLikedMap(prev => ({ ...prev, [id]: !prev[id] }));
+  const handleOpenEdit = () => {
+    if (isGuest) {
+      handleGuestAction('Edit Profile');
+      return;
+    }
+
+    setEditEmail(user?.email || '');
+    setEditUsername(user?.username || '');
+    setEditName(user?.name || '');
+    setEditHeadline(user?.headline || '');
+    setEditSkills(user?.skills?.join(', ') || '');
+    setEditAvatar(user?.avatar || '');
+    setEditBanner(user?.banner || '');
+    setIsEditing(true);
   };
 
-  const displayName = user?.name || 'Zara Neon';
-  const handleName = user?.username ? `@${user.username}` : '@zaraneon';
+  const handleImageChange = (event, setImage) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-  const visibleSkills = SKILLS.slice(0, 3);
-  const remainingSkillsCount = SKILLS.length - 3;
+    if (file.size > 2 * 1024 * 1024) {
+      alert('Image is too large. Please choose an image under 2MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImage(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSaveProfile = async (event) => {
+    event.preventDefault();
+    if (isGuest) return;
+
+    setIsSaving(true);
+
+    try {
+      const skillsArray = editSkills
+        .split(',')
+        .map((skill) => skill.trim())
+        .filter(Boolean);
+
+      await updateProfile({
+        email: editEmail,
+        username: editUsername,
+        name: editName,
+        headline: editHeadline,
+        skills: skillsArray,
+        avatar: editAvatar,
+        banner: editBanner,
+      });
+
+      setIsEditing(false);
+    } catch (error) {
+      alert(error.message || 'Failed to update profile.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleLike = (id, event) => {
+    event.stopPropagation();
+    if (isGuest) {
+      handleGuestAction('Like projects');
+      return;
+    }
+    setLikedMap((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const displayName = user?.name || 'CreativeVerse User';
+  const handleName = user?.username ? `@${user.username}` : '@creativeverse';
+  const userHeadline = user?.headline || 'Add a headline in Edit Profile.';
+  const userAvatar = user?.avatar || AVATAR;
+  const userBanner = user?.banner || BANNER;
+  const dynamicSkills = Array.isArray(user?.skills) ? user.skills : [];
+  const memberSince = user?.createdAt
+    ? new Date(user.createdAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })
+    : 'Recently';
+
+  const getSkillIcon = (name) => {
+    const lower = String(name).toLowerCase();
+    if (lower.includes('blender')) return <CubeIcon />;
+    if (lower.includes('after') || lower.includes('effects') || lower.includes('ae')) return <AfterEffectsIcon />;
+    if (lower.includes('unreal') || lower.includes('unity') || lower.includes('game') || lower.includes('engine')) return <GameIcon />;
+    if (lower.includes('zbrush') || lower.includes('sculpt')) return <ZBrushIcon />;
+    return <CubeIcon />;
+  };
+
+  const visibleSkills = dynamicSkills.slice(0, 3).map((skillName) => ({
+    name: skillName,
+    icon: getSkillIcon(skillName),
+  }));
+  const remainingSkillsCount = Math.max(dynamicSkills.length - 3, 0);
+
+  const profileCompletion = useMemo(() => {
+    const checks = [
+      Boolean(user?.name),
+      Boolean(user?.email),
+      Boolean(user?.username),
+      Boolean(user?.headline),
+      Boolean(user?.avatar),
+      Array.isArray(user?.skills) && user.skills.length > 0,
+    ];
+
+    const completed = checks.filter(Boolean).length;
+    return Math.round((completed / checks.length) * 100);
+  }, [user]);
 
   return (
     <div
@@ -75,7 +201,6 @@ const ProfilePage = () => {
         overflow: 'hidden',
       }}
     >
-      {/* Scrollable Content Area */}
       <div
         className="scrollbar-hide"
         style={{
@@ -86,12 +211,10 @@ const ProfilePage = () => {
           msOverflowStyle: 'none',
         }}
       >
-        {/* Guest banner */}
         {isGuest && <GuestBanner onSignIn={() => navigate('/signin')} />}
 
-        {/* Banner with Cinematic Gradient */}
         <div style={{ position: 'relative', width: '100%', height: 180, overflow: 'hidden', flexShrink: 0 }}>
-          <img src={BANNER} alt="banner" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <img src={userBanner} alt="banner" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           <div
             style={{
               position: 'absolute',
@@ -99,8 +222,7 @@ const ProfilePage = () => {
               background: 'linear-gradient(180deg, rgba(11, 13, 18, 0.4) 0%, rgba(11, 13, 18, 0.95) 100%)',
             }}
           />
-          
-          {/* Header Glass Buttons */}
+
           <div style={{ position: 'absolute', top: 16, left: 16, right: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <button
               onClick={() => navigate('/app/home')}
@@ -117,10 +239,7 @@ const ProfilePage = () => {
                 justifyContent: 'center',
                 color: '#FFFFFF',
                 cursor: 'pointer',
-                transition: 'background-color 0.2s',
               }}
-              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
-              onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
             >
               <ChevronLeftIcon size={18} />
             </button>
@@ -140,10 +259,7 @@ const ProfilePage = () => {
                   justifyContent: 'center',
                   color: '#FFFFFF',
                   cursor: 'pointer',
-                  transition: 'background-color 0.2s',
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
               >
                 <ShareIcon2 size={16} />
               </button>
@@ -167,10 +283,7 @@ const ProfilePage = () => {
                   justifyContent: 'center',
                   color: '#FFFFFF',
                   cursor: 'pointer',
-                  transition: 'background-color 0.2s',
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
               >
                 <SettingsIcon size={16} />
               </button>
@@ -178,12 +291,10 @@ const ProfilePage = () => {
           </div>
         </div>
 
-        {/* Profile Details Container */}
         <div style={{ padding: '0 20px 16px', marginTop: -40, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-          {/* Avatar with Minimal Premium Border */}
           <div style={{ position: 'relative', width: 84, height: 84, marginBottom: 12 }}>
             <img
-              src={AVATAR}
+              src={userAvatar}
               alt={displayName}
               style={{
                 width: '100%',
@@ -213,16 +324,12 @@ const ProfilePage = () => {
             </div>
           </div>
 
-          {/* Profile Identity */}
           <h1 style={{ fontSize: 20, fontWeight: 800, margin: '0 0 2px', letterSpacing: -0.4 }}>{displayName}</h1>
           <p style={{ fontSize: 13, color: '#FF7A59', margin: '0 0 6px', fontWeight: 600 }}>{handleName}</p>
-          <p style={{ fontSize: 13, color: '#B8C0CC', margin: '0 0 16px', fontWeight: 500 }}>
-            Senior Animator · VFX Artist · Dreamer
-          </p>
+          <p style={{ fontSize: 13, color: '#B8C0CC', margin: '0 0 16px', fontWeight: 500 }}>{userHeadline}</p>
 
-          {/* Premium Skill Tags */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginBottom: 20 }}>
-            {visibleSkills.map(skill => (
+            {visibleSkills.map((skill) => (
               <div
                 key={skill.name}
                 style={{
@@ -259,9 +366,25 @@ const ProfilePage = () => {
                 +{remainingSkillsCount}
               </div>
             )}
+            {dynamicSkills.length === 0 && (
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  padding: '5px 12px',
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px dashed rgba(255,255,255,0.12)',
+                  borderRadius: 100,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: '#8F98A8',
+                }}
+              >
+                No skills added yet
+              </div>
+            )}
           </div>
 
-          {/* Clean Stats Row */}
           <div
             style={{
               display: 'flex',
@@ -276,22 +399,21 @@ const ProfilePage = () => {
             }}
           >
             <div style={{ display: 'flex', gap: 6, fontSize: 13, fontWeight: 500, color: '#B8C0CC' }}>
-              <span style={{ color: '#FFFFFF', fontWeight: 700 }}>248</span> Projects
+              <span style={{ color: '#FFFFFF', fontWeight: 700 }}>{dynamicSkills.length}</span> Skills
             </div>
             <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(255,255,255,0.2)' }} />
             <div style={{ display: 'flex', gap: 6, fontSize: 13, fontWeight: 500, color: '#B8C0CC' }}>
-              <span style={{ color: '#FFFFFF', fontWeight: 700 }}>1.2M</span> Followers
+              <span style={{ color: '#FFFFFF', fontWeight: 700 }}>{profileCompletion}%</span> Complete
             </div>
             <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(255,255,255,0.2)' }} />
             <div style={{ display: 'flex', gap: 6, fontSize: 13, fontWeight: 500, color: '#B8C0CC' }}>
-              <span style={{ color: '#FFFFFF', fontWeight: 700 }}>340</span> Following
+              <span style={{ color: '#FFFFFF', fontWeight: 700 }}>{memberSince}</span> Joined
             </div>
           </div>
 
-          {/* Actions */}
           <div style={{ display: 'flex', width: '100%', gap: 10, paddingBottom: 8 }}>
             <button
-              onClick={() => alert('Edit Profile clicked')}
+              onClick={handleOpenEdit}
               style={{
                 flex: 2,
                 height: 44,
@@ -302,14 +424,7 @@ const ProfilePage = () => {
                 fontSize: 14,
                 fontWeight: 700,
                 cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 4px 12px rgba(255, 122, 89, 0.2)',
-                transition: 'opacity 0.2s',
               }}
-              onMouseEnter={(e) => e.currentTarget.style.opacity = 0.9}
-              onMouseLeave={(e) => e.currentTarget.style.opacity = 1}
             >
               Edit Profile
             </button>
@@ -325,20 +440,13 @@ const ProfilePage = () => {
                 fontSize: 14,
                 fontWeight: 700,
                 cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'background-color 0.2s',
               }}
-              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
             >
               Share
             </button>
           </div>
         </div>
 
-        {/* Tab Controls (Projects, Reels, Saved, More Menu) */}
         <div
           style={{
             display: 'flex',
@@ -350,7 +458,7 @@ const ProfilePage = () => {
           }}
         >
           <div style={{ display: 'flex', gap: 20 }}>
-            {['Projects', 'Reels', 'Saved'].map(tab => {
+            {['Projects', 'Reels', 'Saved'].map((tab) => {
               const isActive = activeTab === tab;
               return (
                 <button
@@ -368,7 +476,6 @@ const ProfilePage = () => {
                     fontSize: 13,
                     fontWeight: 700,
                     cursor: 'pointer',
-                    transition: 'all 0.2s',
                   }}
                 >
                   {tab}
@@ -377,7 +484,6 @@ const ProfilePage = () => {
             })}
           </div>
 
-          {/* More Tabs Trigger */}
           <div style={{ position: 'relative' }}>
             <button
               onClick={() => setShowMoreMenu(!showMoreMenu)}
@@ -398,7 +504,6 @@ const ProfilePage = () => {
               <ChevronDownIcon size={14} />
             </button>
 
-            {/* Dropdown Menu */}
             {showMoreMenu && (
               <div
                 style={{
@@ -417,7 +522,7 @@ const ProfilePage = () => {
                   gap: 2,
                 }}
               >
-                {['Models', 'Games', 'About'].map(tab => (
+                {['Models', 'Games', 'About'].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => {
@@ -434,10 +539,7 @@ const ProfilePage = () => {
                       fontWeight: 600,
                       textAlign: 'left',
                       cursor: 'pointer',
-                      transition: 'background-color 0.2s',
                     }}
-                    onMouseEnter={(e) => { if (activeTab !== tab) e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
-                    onMouseLeave={(e) => { if (activeTab !== tab) e.currentTarget.style.background = 'transparent'; }}
                   >
                     {tab}
                   </button>
@@ -447,11 +549,10 @@ const ProfilePage = () => {
           </div>
         </div>
 
-        {/* Tab Content Panels */}
         <div style={{ padding: 12 }}>
           {activeTab === 'Projects' && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              {PROJECTS.map(proj => {
+              {PROJECTS.map((proj) => {
                 const isLiked = likedMap[proj.id];
                 return (
                   <div
@@ -465,14 +566,9 @@ const ProfilePage = () => {
                       cursor: 'pointer',
                       background: '#121620',
                       border: '1px solid rgba(255,255,255,0.04)',
-                      transition: 'transform 0.2s ease, border-color 0.2s ease',
                     }}
-                    onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.98)'}
-                    onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
                   >
                     <img src={proj.image} alt={proj.category} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    
-                    {/* Dark bottom vignette */}
                     <div
                       style={{
                         position: 'absolute',
@@ -481,8 +577,6 @@ const ProfilePage = () => {
                         pointerEvents: 'none',
                       }}
                     />
-
-                    {/* Category Pill */}
                     <div
                       style={{
                         position: 'absolute',
@@ -501,10 +595,8 @@ const ProfilePage = () => {
                     >
                       {proj.category}
                     </div>
-
-                    {/* Like Action */}
                     <div
-                      onClick={(e) => handleLike(proj.id, e)}
+                      onClick={(event) => handleLike(proj.id, event)}
                       style={{
                         position: 'absolute',
                         bottom: 8,
@@ -547,13 +639,283 @@ const ProfilePage = () => {
         </div>
       </div>
 
-      {/* Guest Toast */}
       {toast && (
         <GuestToast
           message={`Sign in to ${toast.action} on CreativeVerse.`}
-          onSignIn={() => { setToast(null); navigate('/signin'); }}
+          onSignIn={() => {
+            setToast(null);
+            navigate('/signin');
+          }}
           onDismiss={() => setToast(null)}
         />
+      )}
+
+      {toastMsg && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 96,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 1100,
+            animation: 'toastSlideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <style>{`
+            @keyframes toastSlideUp {
+              from { opacity: 0; transform: translateX(-50%) translateY(20px) scale(0.92); }
+              to   { opacity: 1; transform: translateX(-50%) translateY(0)    scale(1);    }
+            }
+          `}</style>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '11px 18px 11px 12px',
+              borderRadius: 100,
+              background: 'rgba(18, 22, 32, 0.88)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              boxShadow: '0 4px 32px rgba(0,0,0,0.45), 0 1px 0 rgba(255,255,255,0.06) inset',
+            }}
+          >
+            {/* Check circle */}
+            <div
+              style={{
+                width: 26,
+                height: 26,
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #34d399 0%, #059669 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                boxShadow: '0 0 12px rgba(52, 211, 153, 0.4)',
+              }}
+            >
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                <path d="M2.5 6.5L5.5 9.5L10.5 4" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+
+            {/* Text */}
+            <span
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: '#F1F5F9',
+                letterSpacing: 0.1,
+              }}
+            >
+              {toastMsg}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {isEditing && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'rgba(11, 13, 18, 0.96)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            zIndex: 1000,
+            display: 'flex',
+            flexDirection: 'column',
+            padding: '24px 20px',
+            overflowY: 'auto',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+            <h2 style={{ fontSize: 20, fontWeight: 800, margin: 0, letterSpacing: -0.5 }}>Edit Profile</h2>
+            <button
+              onClick={() => setIsEditing(false)}
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: '50%',
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                color: '#FFF',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+              }}
+            >
+              X
+            </button>
+          </div>
+
+          <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+              <div style={{ position: 'relative', width: 80, height: 80 }}>
+                <img
+                  src={editAvatar || AVATAR}
+                  alt="Avatar Preview"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    border: '2px solid #FF7A59',
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', gap: 10 }}>
+                <label
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: 100,
+                    background: 'rgba(255,255,255,0.08)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    color: '#FFF',
+                  }}
+                >
+                  Upload Photo
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(event) => handleImageChange(event, setEditAvatar)}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+
+                {editAvatar && (
+                  <button
+                    type="button"
+                    onClick={() => setEditAvatar('')}
+                    style={{
+                      padding: '6px 14px',
+                      borderRadius: 100,
+                      background: 'rgba(255, 74, 74, 0.1)',
+                      border: '1px solid rgba(255, 74, 74, 0.2)',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: '#FF4A4A',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Delete Photo
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div
+                style={{
+                  width: '100%',
+                  height: 84,
+                  borderRadius: 18,
+                  overflow: 'hidden',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  background: 'rgba(15, 23, 42, 0.72)',
+                }}
+              >
+                <img
+                  src={editBanner || BANNER}
+                  alt="Banner Preview"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </div>
+
+              <label
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: 100,
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  color: '#FFF',
+                  alignSelf: 'center',
+                }}
+              >
+                Upload Banner
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(event) => handleImageChange(event, setEditBanner)}
+                  style={{ display: 'none' }}
+                />
+              </label>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <label style={{ fontSize: 11, fontWeight: 700, color: '#B8C0CC', textTransform: 'uppercase' }}>Email</label>
+              <input type="email" value={editEmail} onChange={(event) => setEditEmail(event.target.value)} required style={fieldStyle} />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <label style={{ fontSize: 11, fontWeight: 700, color: '#B8C0CC', textTransform: 'uppercase' }}>Username</label>
+              <input type="text" value={editUsername} onChange={(event) => setEditUsername(event.target.value)} required style={fieldStyle} />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <label style={{ fontSize: 11, fontWeight: 700, color: '#B8C0CC', textTransform: 'uppercase' }}>Full Name</label>
+              <input type="text" value={editName} onChange={(event) => setEditName(event.target.value)} required style={fieldStyle} />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <label style={{ fontSize: 11, fontWeight: 700, color: '#B8C0CC', textTransform: 'uppercase' }}>Professional Headline</label>
+              <input type="text" value={editHeadline} onChange={(event) => setEditHeadline(event.target.value)} placeholder="Gameplay Programmer · 3D Artist" style={fieldStyle} />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <label style={{ fontSize: 11, fontWeight: 700, color: '#B8C0CC', textTransform: 'uppercase' }}>Skills (comma-separated)</label>
+              <input type="text" value={editSkills} onChange={(event) => setEditSkills(event.target.value)} placeholder="Unity, C#, Blender" style={fieldStyle} />
+            </div>
+
+            <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+              <button
+                type="button"
+                onClick={() => setIsEditing(false)}
+                style={{
+                  flex: 1,
+                  height: 48,
+                  borderRadius: 12,
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  color: '#FFF',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSaving}
+                style={{
+                  flex: 1.5,
+                  height: 48,
+                  borderRadius: 12,
+                  background: '#FF7A59',
+                  border: 'none',
+                  color: '#FFF',
+                  fontSize: 14,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  opacity: isSaving ? 0.7 : 1,
+                }}
+              >
+                {isSaving ? 'Saving...' : 'Save Profile'}
+              </button>
+            </div>
+          </form>
+        </div>
       )}
     </div>
   );

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import WebGLGamePlayer from '../../components/WebGLGamePlayer'
@@ -209,11 +209,47 @@ function mapAssetToReel(asset, index) {
   }
 }
 
+function mapProjectToReel(project, index) {
+  const creatorName = project.ownerUsername || project.ownerName || `creator_${index + 1}`
+  const discipline =
+    project.type === 'game'
+      ? 'Game Developer'
+      : project.type === '3d'
+        ? '3D Artist'
+        : '2D Artist'
+  const stats = makeStats(index + 6)
+
+  return {
+    id: `project:${project.id}`,
+    projectId: project.id,
+    creatorName,
+    discipline,
+    avatar: project.ownerAvatar || DEFAULT_AVATAR,
+    type: project.type === '2d' ? 'image' : project.type,
+    gameUrl: project.gameUrl,
+    modelUrl: project.modelUrl,
+    image: project.imageUrl,
+    loadingScreenUrl: project.previewUrl,
+    mode: project.mode ?? 'landscape',
+    thumbnailMode: project.mode ?? 'landscape',
+    background: '#101820',
+    likesCount: stats.likesCount,
+    commentsCount: stats.commentsCount,
+    savesCount: stats.savesCount,
+    projectTitle: project.title ?? 'Untitled project',
+    description: project.description ?? '',
+    software: Array.isArray(project.software) ? project.software : [],
+    tags: Array.isArray(project.tags) ? project.tags : [],
+    sourceLabel: 'Uploaded project',
+  }
+}
+
 function normalizeBackendContent(data) {
   const games = Array.isArray(data?.games) ? data.games : []
   const assets = Array.isArray(data?.assets) ? data.assets : []
+  const projects = Array.isArray(data?.projects) ? data.projects : []
 
-  return [...games.map(mapGameToReel), ...assets.map(mapAssetToReel)]
+  return [...games.map(mapGameToReel), ...assets.map(mapAssetToReel), ...projects.map(mapProjectToReel)]
 }
 
 const initialFeedState = {
@@ -225,7 +261,7 @@ const initialFeedState = {
 
 function HomePage() {
   const navigate = useNavigate()
-  const { isGuest } = useAuth()
+  const { isGuest, user } = useAuth()
   const [feedState, setFeedState] = useState(initialFeedState)
   const [activeIdx, setActiveIdx] = useState(0)
   const [expandedProj, setExpandedProj] = useState(null)
@@ -233,56 +269,59 @@ function HomePage() {
   const [savedMap, setSavedMap] = useState({})
   const feedContainerRef = useRef(null)
 
+  const loadContent = useCallback(async (signal) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/content`, { signal })
+
+      if (!response.ok) {
+        throw new Error(`API request failed with status ${response.status}`)
+      }
+
+      const data = await response.json()
+      const backendItems = normalizeBackendContent(data)
+
+      // Always show demo reels; prepend any live published projects first
+      const items = backendItems.length ? backendItems : DEMO_REELS
+
+      setFeedState({
+        status: 'ready',
+        error: '',
+        sourceLabel: 'Live backend content',
+        items,
+      })
+      setActiveIdx(0)
+      setExpandedProj(null)
+    } catch (error) {
+      if (error?.name === 'AbortError') {
+        return
+      }
+
+      setFeedState({
+        status: 'fallback',
+        error: 'Unable to reach the backend. Showing local demo content for now.',
+        sourceLabel: 'Local demo content',
+        items: DEMO_REELS,
+      })
+      setActiveIdx(0)
+      setExpandedProj(null)
+    }
+  }, [])
+
   useEffect(() => {
     const controller = new AbortController()
+    loadContent(controller.signal)
 
-    async function loadContent() {
-      try {
-        const response = await fetch(`${API_BASE_URL}/content`, {
-          signal: controller.signal,
-        })
-
-        if (!response.ok) {
-          throw new Error(`API request failed with status ${response.status}`)
-        }
-
-        const data = await response.json()
-        const items = normalizeBackendContent(data)
-
-        if (!items.length) {
-          throw new Error('Backend returned no published content')
-        }
-
-        setFeedState({
-          status: 'ready',
-          error: '',
-          sourceLabel: 'Live backend content',
-          items,
-        })
-        setActiveIdx(0)
-        setExpandedProj(null)
-      } catch (error) {
-        if (error.name === 'AbortError') {
-          return
-        }
-
-        setFeedState({
-          status: 'fallback',
-          error: 'Unable to reach the backend. Showing local demo content for now.',
-          sourceLabel: 'Local demo content',
-          items: DEMO_REELS,
-        })
-        setActiveIdx(0)
-        setExpandedProj(null)
-      }
+    const handleProjectPublished = () => {
+      loadContent()
     }
 
-    loadContent()
+    window.addEventListener('projectPublished', handleProjectPublished)
 
     return () => {
       controller.abort()
+      window.removeEventListener('projectPublished', handleProjectPublished)
     }
-  }, [])
+  }, [loadContent])
 
   const handleScroll = () => {
     if (!feedContainerRef.current) {
@@ -376,6 +415,10 @@ function HomePage() {
           const isSaved = !!savedMap[reel.id]
           const displayLikes = reel.likesCount + (isLiked ? 1 : 0)
 
+          const isCurrentUserReel = user && (reel.creatorName === user.username);
+          const displayAvatar = isCurrentUserReel && user.avatar ? user.avatar : reel.avatar;
+          const displayCreatorName = isCurrentUserReel ? user.username : reel.creatorName;
+
           return (
             <div key={reel.id} className="reel-card">
               {reel.type === 'game' ? (
@@ -396,6 +439,7 @@ function HomePage() {
                     thumbnailMode={reel.thumbnailMode}
                     aspectRatio={reel.aspectRatio}
                     loadingScreenUrl={reel.loadingScreenUrl}
+                    isActive={index === safeActiveIdx}
                   />
                 </div>
               ) : reel.type === '3d' ? (
@@ -435,17 +479,17 @@ function HomePage() {
               <div className="creator-info">
                 <div
                   className="creator-profile"
-                  onClick={() => navigate(`/app/creator/${reel.creatorName}`)}
+                  onClick={() => navigate(`/app/creator/${displayCreatorName}`)}
                 >
                   <div className="avatar-container">
-                    <img src={reel.avatar} alt={reel.creatorName} className="avatar-img" />
+                    <img src={displayAvatar} alt={displayCreatorName} className="avatar-img" />
                     <div className="plus-icon-container">
                       <PlusIcon size={8} />
                     </div>
                   </div>
                   <div className="creator-details">
                     <div className="creator-name-row">
-                      <span className="creator-name">{reel.creatorName}</span>
+                      <span className="creator-name">{displayCreatorName}</span>
                       <VerifiedIcon size={12} />
                     </div>
                     <span className="creator-discipline">{reel.discipline}</span>
