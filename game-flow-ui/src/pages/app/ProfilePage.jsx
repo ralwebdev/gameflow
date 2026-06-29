@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { fetchContent } from '../../lib/content';
 import GuestBanner from '../../components/layout/GuestBanner';
 import GuestToast from '../../components/layout/GuestToast';
 import {
@@ -55,6 +56,8 @@ const ProfilePage = () => {
   const [editAvatar, setEditAvatar] = useState('');
   const [editBanner, setEditBanner] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [userProjects, setUserProjects] = useState([]);
+  const [isLoadingProjects, setIsLoadingProjects] = useState(false);
 
   useEffect(() => {
     let timeoutId = null;
@@ -73,6 +76,35 @@ const ProfilePage = () => {
       window.removeEventListener('profileUpdated', handleProfileUpdate);
     };
   }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (isGuest || !user) return;
+
+    async function loadUserContent() {
+      setIsLoadingProjects(true);
+      try {
+        const data = await fetchContent();
+        if (!isMounted) return;
+        const allProjects = Array.isArray(data?.projects) ? data.projects : [];
+        const filtered = allProjects.filter(
+          (proj) => String(proj.ownerId) === String(user.id || user._id)
+        );
+        setUserProjects(filtered);
+      } catch (err) {
+        console.error('Failed to load user projects:', err);
+      } finally {
+        if (isMounted) {
+          setIsLoadingProjects(false);
+        }
+      }
+    }
+
+    loadUserContent();
+    return () => {
+      isMounted = false;
+    };
+  }, [user, isGuest]);
 
   const handleGuestAction = (actionName) => {
     setToast({ action: actionName });
@@ -551,72 +583,105 @@ const ProfilePage = () => {
 
         <div style={{ padding: 12 }}>
           {activeTab === 'Projects' && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              {PROJECTS.map((proj) => {
-                const isLiked = likedMap[proj.id];
-                return (
-                  <div
-                    key={proj.id}
-                    onClick={() => navigate(`/app/project/${proj.id}`)}
+            <>
+              {isLoadingProjects ? (
+                <div style={{ textAlign: 'center', padding: '40px 20px', color: '#B8C0CC', fontSize: 13 }}>
+                  Loading your portfolio...
+                </div>
+              ) : userProjects.length > 0 ? (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  {userProjects.map((proj) => {
+                    const isLiked = !!likedMap[proj.id];
+                    const isTall = proj.mode === 'portrait';
+                    const imageSrc = proj.previewUrl || proj.imageUrl || BANNER;
+                    return (
+                      <div
+                        key={proj.id}
+                        onClick={() => navigate(`/app/project/${proj.id}`)}
+                        style={{
+                          position: 'relative',
+                          borderRadius: 16,
+                          overflow: 'hidden',
+                          aspectRatio: isTall ? '0.78' : '1.1',
+                          cursor: 'pointer',
+                          background: '#121620',
+                          border: '1px solid rgba(255,255,255,0.04)',
+                        }}
+                      >
+                        <img src={imageSrc} alt={proj.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <div
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            background: 'linear-gradient(0deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 50%)',
+                            pointerEvents: 'none',
+                          }}
+                        />
+                        <div
+                          style={{
+                            position: 'absolute',
+                            bottom: 10,
+                            left: 10,
+                            background: 'rgba(255,255,255,0.1)',
+                            backdropFilter: 'blur(8px)',
+                            WebkitBackdropFilter: 'blur(8px)',
+                            padding: '3px 8px',
+                            borderRadius: 100,
+                            fontSize: 9,
+                            fontWeight: 700,
+                            color: '#FFFFFF',
+                            border: '1px solid rgba(255,255,255,0.06)',
+                          }}
+                        >
+                          {proj.category}
+                        </div>
+                        <div
+                          onClick={(event) => handleLike(proj.id, event)}
+                          style={{
+                            position: 'absolute',
+                            bottom: 8,
+                            right: 10,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 4,
+                            fontSize: 11,
+                            fontWeight: 700,
+                            color: isLiked ? '#FF7A59' : '#FFFFFF',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <HeartIcon filled={isLiked} size={14} />
+                          <span>{isLiked ? '1' : '0'}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '60px 20px', color: '#B8C0CC' }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>No projects published yet</div>
+                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', maxWidth: 260, margin: '0 auto 20px', lineHeight: '1.6' }}>
+                    Upload your WebGL builds, 3D files, or 2D artwork and showcase them on your profile.
+                  </p>
+                  <button
+                    onClick={() => navigate('/app/upload')}
                     style={{
-                      position: 'relative',
-                      borderRadius: 16,
-                      overflow: 'hidden',
-                      aspectRatio: proj.tall ? '0.78' : '1.1',
+                      background: 'linear-gradient(135deg, #FF7A59 0%, #FF522C 100%)',
+                      border: 'none',
+                      borderRadius: 100,
+                      color: '#FFFFFF',
+                      padding: '10px 22px',
+                      fontSize: 12,
+                      fontWeight: 700,
                       cursor: 'pointer',
-                      background: '#121620',
-                      border: '1px solid rgba(255,255,255,0.04)',
+                      boxShadow: '0 4px 15px rgba(255, 122, 89, 0.25)',
                     }}
                   >
-                    <img src={proj.image} alt={proj.category} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    <div
-                      style={{
-                        position: 'absolute',
-                        inset: 0,
-                        background: 'linear-gradient(0deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 50%)',
-                        pointerEvents: 'none',
-                      }}
-                    />
-                    <div
-                      style={{
-                        position: 'absolute',
-                        bottom: 10,
-                        left: 10,
-                        background: 'rgba(255,255,255,0.1)',
-                        backdropFilter: 'blur(8px)',
-                        WebkitBackdropFilter: 'blur(8px)',
-                        padding: '3px 8px',
-                        borderRadius: 100,
-                        fontSize: 9,
-                        fontWeight: 700,
-                        color: '#FFFFFF',
-                        border: '1px solid rgba(255,255,255,0.06)',
-                      }}
-                    >
-                      {proj.category}
-                    </div>
-                    <div
-                      onClick={(event) => handleLike(proj.id, event)}
-                      style={{
-                        position: 'absolute',
-                        bottom: 8,
-                        right: 10,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 4,
-                        fontSize: 11,
-                        fontWeight: 700,
-                        color: isLiked ? '#FF7A59' : '#FFFFFF',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      <HeartIcon filled={isLiked} size={14} />
-                      <span>{isLiked ? '1.3k' : proj.likes}</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                    Upload First Project
+                  </button>
+                </div>
+              )}
+            </>
           )}
 
           {activeTab === 'Reels' && (
