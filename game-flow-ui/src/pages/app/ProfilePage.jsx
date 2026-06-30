@@ -5,9 +5,139 @@ import { fetchContent, togglePostLike, updateProject, deleteProject, uploadProje
 import GuestBanner from '../../components/layout/GuestBanner';
 import GuestToast from '../../components/layout/GuestToast';
 import {
-  ChevronLeftIcon, ShareIcon2, VerifiedIcon, HeartIcon,
-  ChevronDownIcon, CubeIcon, AfterEffectsIcon, GameIcon, ZBrushIcon
+  ChevronLeftIcon, ShareIcon2, VerifiedIcon, ChevronDownIcon
 } from '../../components/icons/Icons';
+
+// Local skill icons with color & size support
+const CodeSkillIcon = ({ color = '#B8C0CC', size = 13 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="16 18 22 12 16 6" />
+    <polyline points="8 6 2 12 8 18" />
+  </svg>
+);
+
+const DatabaseSkillIcon = ({ color = '#B8C0CC', size = 13 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <ellipse cx="12" cy="5" rx="8" ry="3" />
+    <path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5" />
+    <path d="M4 11v8c0 1.66 3.58 3 8 3s8-1.34 8-3v-8" />
+  </svg>
+);
+
+const BrushSkillIcon = ({ color = '#B8C0CC', size = 13 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 3a3 3 0 0 1 3 3c0 5-3 8-6 8h-1l-4 4a3 3 0 0 1-4 0 3 3 0 0 1 0-4l4-4v-1c0-3 3-6 8-6z" />
+    <path d="M6 18c-1 0-2 .4-3 1" />
+  </svg>
+);
+
+const CloudSkillIcon = ({ color = '#B8C0CC', size = 13 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 17.58A5 5 0 0 0 18 8h-1.26A8 8 0 1 0 4 16.25" />
+    <path d="M8 16h12a4 4 0 0 1 0 8H8a4 4 0 0 1 0-8z" />
+  </svg>
+);
+
+const CubeSkillIcon = ({ color = '#B8C0CC', size = 13 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+    <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+    <line x1="12" y1="22.08" x2="12" y2="12" />
+  </svg>
+);
+
+const AfterEffectsSkillIcon = ({ color = '#B8C0CC', size = 13 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
+    <line x1="7" y1="2" x2="7" y2="22" /><line x1="17" y1="2" x2="17" y2="22" />
+    <line x1="2" y1="12" x2="22" y2="12" />
+  </svg>
+);
+
+const GameSkillIcon = ({ color = '#B8C0CC', size = 13 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="6" y1="11" x2="10" y2="11" /><line x1="8" y1="9" x2="8" y2="13" />
+    <line x1="15" y1="12" x2="15.01" y2="12" /><line x1="18" y1="10" x2="18.01" y2="10" />
+    <path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258A4 4 0 0 0 17.32 5z" />
+  </svg>
+);
+
+const ZBrushSkillIcon = ({ color = '#B8C0CC', size = 13 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12a10 10 0 0 1 10-10z" />
+    <path d="M12 6v12M6 12h12" />
+  </svg>
+);
+
+// Tab and page SVG icons
+const GridIcon = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="7" height="7" />
+    <rect x="14" y="3" width="7" height="7" />
+    <rect x="14" y="14" width="7" height="7" />
+    <rect x="3" y="14" width="7" height="7" />
+  </svg>
+);
+
+const HeartIcon = ({ size = 20, color = 'currentColor', fill = 'none', filled = false }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={filled ? '#FF7A59' : fill} stroke={filled ? '#FF7A59' : color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+  </svg>
+);
+
+const MessageCircleIcon = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+  </svg>
+);
+
+const UsersIcon = ({ size = 20, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+  </svg>
+);
+
+const BookmarkIcon = ({ size = 20, color = 'currentColor', fill = 'none' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+  </svg>
+);
+
+// Stats Card Icons
+const GraduationCapIcon = ({ size = 20, color = '#FF7A59' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+    <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5" />
+  </svg>
+);
+
+const CheckCircleIcon = ({ size = 20, color = '#A78BFA' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+    <polyline points="22 4 12 14.01 9 11.01" />
+  </svg>
+);
+
+const CalendarIcon = ({ size = 20, color = '#34D399' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+    <line x1="16" y1="2" x2="16" y2="6" />
+    <line x1="8" y1="2" x2="8" y2="6" />
+    <line x1="3" y1="10" x2="21" y2="10" />
+  </svg>
+);
+
+const ShareProfileIcon = ({ size = 16, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <polyline points="16 11 20 11 20 15" />
+    <line x1="23" y1="8" x2="16" y2="15" />
+  </svg>
+);
 
 const LogoutIcon = ({ size = 16 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -389,11 +519,62 @@ const ProfilePage = () => {
 
   const getSkillIcon = (name) => {
     const lower = String(name).toLowerCase();
-    if (lower.includes('blender')) return <CubeIcon />;
-    if (lower.includes('after') || lower.includes('effects') || lower.includes('ae')) return <AfterEffectsIcon />;
-    if (lower.includes('unreal') || lower.includes('unity') || lower.includes('game') || lower.includes('engine')) return <GameIcon />;
-    if (lower.includes('zbrush') || lower.includes('sculpt')) return <ZBrushIcon />;
-    return <CubeIcon />;
+    if (lower.includes('react')) return <CodeSkillIcon color="#00D2FF" size={13} />;
+    if (lower.includes('node')) return <CodeSkillIcon color="#68A063" size={13} />;
+    if (lower.includes('mongodb') || lower.includes('mongo')) return <DatabaseSkillIcon color="#4DB33D" size={13} />;
+    if (lower.includes('blender') || lower.includes('maya') || lower.includes('3d') || lower.includes('model')) return <CubeSkillIcon color="#EA7638" size={13} />;
+    if (lower.includes('after') || lower.includes('effects') || lower.includes('ae')) return <AfterEffectsSkillIcon color="#9999FF" size={13} />;
+    if (lower.includes('unreal') || lower.includes('unity') || lower.includes('game') || lower.includes('engine')) return <GameSkillIcon color="#34D399" size={13} />;
+    if (lower.includes('zbrush') || lower.includes('sculpt')) return <ZBrushSkillIcon color="#FBBF24" size={13} />;
+
+    if (
+      lower.includes('postgres') ||
+      lower.includes('postgresql') ||
+      lower.includes('mysql') ||
+      lower.includes('sql') ||
+      lower.includes('sqlite') ||
+      lower.includes('prisma') ||
+      lower.includes('firebase') ||
+      lower.includes('supabase') ||
+      lower.includes('database')
+    ) return <DatabaseSkillIcon color="#10B981" size={13} />;
+
+    if (
+      lower.includes('typescript') ||
+      lower.includes('python') ||
+      lower.includes('java') ||
+      lower.includes('c++') ||
+      lower.includes('cpp') ||
+      lower.includes('c#') ||
+      lower.includes('html') ||
+      lower.includes('css') ||
+      lower.includes('tailwind') ||
+      lower.includes('bootstrap') ||
+      lower.includes('frontend') ||
+      lower.includes('backend') ||
+      lower.includes('web')
+    ) return <CodeSkillIcon color="#38BDF8" size={13} />;
+
+    if (
+      lower.includes('figma') ||
+      lower.includes('photoshop') ||
+      lower.includes('illustrator') ||
+      lower.includes('ui') ||
+      lower.includes('ux') ||
+      lower.includes('design')
+    ) return <BrushSkillIcon color="#EC4899" size={13} />;
+
+    if (
+      lower.includes('aws') ||
+      lower.includes('azure') ||
+      lower.includes('gcp') ||
+      lower.includes('cloud') ||
+      lower.includes('docker') ||
+      lower.includes('kubernetes') ||
+      lower.includes('devops')
+    ) return <CloudSkillIcon color="#60A5FA" size={13} />;
+
+    return <CodeSkillIcon color="#8F98A8" size={13} />;
   };
 
   const visibleSkills = dynamicSkills.slice(0, 3).map((skillName) => ({
@@ -452,6 +633,343 @@ const ProfilePage = () => {
     });
   }, [contentFeed]);
 
+  const likedItems = useMemo(() => {
+    const makeItem = (item, kind) => ({
+      ...item,
+      kind,
+      thumbnail:
+        item.previewUrl ||
+        item.imageUrl ||
+        item.loadingScreenUrl ||
+        item.modelUrl ||
+        BANNER,
+      title: item.title || item.projectTitle || 'Untitled post',
+      subtitle:
+        kind === 'Project'
+          ? item.category || item.type || 'Project'
+          : kind === 'Game'
+            ? 'Game'
+            : '3D Asset',
+    });
+
+    const projectItems = contentFeed.projects
+      .filter((item) => getEngagement(item).viewerHasLiked)
+      .map((item) => makeItem(item, 'Project'));
+    const gameItems = contentFeed.games
+      .filter((item) => getEngagement(item).viewerHasLiked)
+      .map((item) => makeItem(item, 'Game'));
+    const assetItems = contentFeed.assets
+      .filter((item) => getEngagement(item).viewerHasLiked)
+      .map((item) => makeItem(item, '3D Asset'));
+
+    return [...projectItems, ...gameItems, ...assetItems].sort((a, b) => {
+      const left = new Date(a.updatedAt || a.createdAt || 0).getTime();
+      const right = new Date(b.updatedAt || b.createdAt || 0).getTime();
+      return right - left;
+    });
+  }, [contentFeed]);
+
+  const commentedItems = useMemo(() => {
+    const makeItem = (item, kind) => ({
+      ...item,
+      kind,
+      thumbnail:
+        item.previewUrl ||
+        item.imageUrl ||
+        item.loadingScreenUrl ||
+        item.modelUrl ||
+        BANNER,
+      title: item.title || item.projectTitle || 'Untitled post',
+      subtitle:
+        kind === 'Project'
+          ? item.category || item.type || 'Project'
+          : kind === 'Game'
+            ? 'Game'
+            : '3D Asset',
+    });
+
+    const userHasCommented = (item) => {
+      if (!user?.username) return false;
+      const comments = getEngagement(item).comments || [];
+      const checkComment = (c) => {
+        if (String(c.username || '').toLowerCase() === String(user.username).toLowerCase()) {
+          return true;
+        }
+        if (Array.isArray(c.replies)) {
+          return c.replies.some(checkComment);
+        }
+        return false;
+      };
+      return comments.some(checkComment);
+    };
+
+    const projectItems = contentFeed.projects
+      .filter(userHasCommented)
+      .map((item) => makeItem(item, 'Project'));
+    const gameItems = contentFeed.games
+      .filter(userHasCommented)
+      .map((item) => makeItem(item, 'Game'));
+    const assetItems = contentFeed.assets
+      .filter(userHasCommented)
+      .map((item) => makeItem(item, '3D Asset'));
+
+    return [...projectItems, ...gameItems, ...assetItems].sort((a, b) => {
+      const left = new Date(a.updatedAt || a.createdAt || 0).getTime();
+      const right = new Date(b.updatedAt || b.createdAt || 0).getTime();
+      return right - left;
+    });
+  }, [contentFeed, user]);
+
+  const collabItems = useMemo(() => {
+    const makeItem = (item, kind) => ({
+      ...item,
+      kind,
+      thumbnail:
+        item.previewUrl ||
+        item.imageUrl ||
+        item.loadingScreenUrl ||
+        item.modelUrl ||
+        BANNER,
+      title: item.title || item.projectTitle || 'Untitled post',
+      subtitle:
+        kind === 'Project'
+          ? item.category || item.type || 'Project'
+          : kind === 'Game'
+            ? 'Game'
+            : '3D Asset',
+    });
+
+    const isCollab = (item) => {
+      const tags = Array.isArray(item.tags) ? item.tags.map(t => String(t).toLowerCase()) : [];
+      return tags.some(tag => tag.includes('collab') || tag.includes('team') || tag.includes('collaborator'));
+    };
+
+    const projectItems = contentFeed.projects
+      .filter(isCollab)
+      .map((item) => makeItem(item, 'Project'));
+    const gameItems = contentFeed.games
+      .filter(isCollab)
+      .map((item) => makeItem(item, 'Game'));
+    const assetItems = contentFeed.assets
+      .filter(isCollab)
+      .map((item) => makeItem(item, '3D Asset'));
+
+    return [...projectItems, ...gameItems, ...assetItems].sort((a, b) => {
+      const left = new Date(a.updatedAt || a.createdAt || 0).getTime();
+      const right = new Date(b.updatedAt || b.createdAt || 0).getTime();
+      return right - left;
+    });
+  }, [contentFeed]);
+
+  const renderGrid = (items, isOwnPortfolio = false, emptyText = 'No items found', emptySubtext = '') => {
+    if (isLoadingProjects) {
+      return (
+        <div style={{ textAlign: 'center', padding: '40px 20px', color: '#B8C0CC', fontSize: 13 }}>
+          Loading content...
+        </div>
+      );
+    }
+
+    if (items.length === 0) {
+      return (
+        <div style={{ textAlign: 'center', padding: '40px 20px', color: '#B8C0CC' }}>
+          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 8, color: '#FFFFFF' }}>{emptyText}</div>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', maxWidth: 260, margin: '0 auto 16px', lineHeight: '1.6' }}>
+            {emptySubtext}
+          </p>
+          {isOwnPortfolio && (
+            <button
+              onClick={() => navigate('/app/upload')}
+              className="press-scale"
+              style={{
+                background: 'linear-gradient(135deg, #FF7A59 0%, #FF522C 100%)',
+                border: 'none',
+                borderRadius: 100,
+                color: '#FFFFFF',
+                padding: '10px 22px',
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: 'pointer',
+                boxShadow: '0 4px 15px rgba(255, 122, 89, 0.25)',
+              }}
+            >
+              Upload First Project
+            </button>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        {items.map((proj, index) => {
+          const projId = proj.id ?? proj._id ?? index;
+          const engagement = getEngagement(proj);
+          const isLiked = Boolean(engagement.viewerHasLiked);
+          const isTall = proj.mode === 'portrait';
+          const imageSrc = proj.previewUrl || proj.imageUrl || proj.thumbnail || BANNER;
+          const categoryText = proj.category || proj.subtitle || proj.kind || 'Showcase';
+
+          return (
+            <div
+              key={projId}
+              onClick={() => navigate(`/app/project/${projId}`)}
+              className="card-hover-lift"
+              style={{
+                position: 'relative',
+                borderRadius: 20,
+                overflow: 'hidden',
+                aspectRatio: isTall ? '0.78' : '1.1',
+                cursor: 'pointer',
+                background: '#121620',
+                border: '1px solid rgba(255,255,255,0.06)',
+                boxShadow: '0 6px 20px rgba(0, 0, 0, 0.3)',
+              }}
+            >
+              <img
+                src={imageSrc}
+                alt={proj.title}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+
+              {/* Action Buttons (Only for own portfolio tab) */}
+              {isOwnPortfolio && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 10,
+                    right: 10,
+                    display: 'flex',
+                    gap: 6,
+                    zIndex: 10,
+                  }}
+                >
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenEditProject(proj);
+                    }}
+                    className="press-scale"
+                    style={{
+                      width: 30,
+                      height: 30,
+                      borderRadius: '50%',
+                      background: 'rgba(15, 23, 42, 0.7)',
+                      backdropFilter: 'blur(12px)',
+                      WebkitBackdropFilter: 'blur(12px)',
+                      border: '1px solid rgba(255, 255, 255, 0.15)',
+                      color: '#FFFFFF',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.25)',
+                    }}
+                    title="Edit Project"
+                  >
+                    <EditIcon size={13} />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenDeleteProject(proj);
+                    }}
+                    className="press-scale"
+                    style={{
+                      width: 30,
+                      height: 30,
+                      borderRadius: '50%',
+                      background: 'rgba(15, 23, 42, 0.7)',
+                      backdropFilter: 'blur(12px)',
+                      WebkitBackdropFilter: 'blur(12px)',
+                      border: '1px solid rgba(255, 255, 255, 0.15)',
+                      color: '#FF6B6B',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.25)',
+                    }}
+                    title="Delete Project"
+                  >
+                    <TrashIcon size={13} />
+                  </button>
+                </div>
+              )}
+
+              {/* Bottom Gradient Overlay */}
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'linear-gradient(to top, rgba(11, 13, 18, 0.95) 0%, rgba(11, 13, 18, 0.6) 35%, rgba(11, 13, 18, 0) 100%)',
+                  pointerEvents: 'none',
+                }}
+              />
+
+              {/* Category Badge */}
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: 12,
+                  left: 12,
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  padding: '4px 10px',
+                  borderRadius: 100,
+                  fontSize: 9,
+                  fontWeight: 700,
+                  color: '#FFFFFF',
+                  letterSpacing: '0.2px',
+                  textTransform: 'uppercase',
+                }}
+              >
+                {categoryText}
+              </div>
+
+              {/* Engagement Heart Icon */}
+              <div
+                onClick={(event) => handleLikeProject(proj, event)}
+                style={{
+                  position: 'absolute',
+                  bottom: 10,
+                  right: 12,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 5,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: isLiked ? '#FF7A59' : '#FFFFFF',
+                  cursor: 'pointer',
+                  background: 'rgba(15, 23, 42, 0.6)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)',
+                  padding: '4px 10px',
+                  borderRadius: 12,
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <HeartIcon filled={isLiked} size={14} />
+                <span>{formatCount(engagement.likesCount)}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const tabsList = [
+    { id: 'Projects', label: 'Projects', icon: (color) => <GridIcon size={18} color={color} /> },
+    { id: 'Liked', label: 'Liked', icon: (color) => <HeartIcon size={18} color={color} /> },
+    { id: 'Comments', label: 'Comments', icon: (color) => <MessageCircleIcon size={18} color={color} /> },
+    { id: 'Collaborations', label: 'Collaborate', icon: (color) => <UsersIcon size={18} color={color} /> },
+    { id: 'Saved', label: 'Saved', icon: (color) => <BookmarkIcon size={18} color={color} /> },
+  ];
+
   return (
     <div
       style={{
@@ -465,6 +983,33 @@ const ProfilePage = () => {
         overflow: 'hidden',
       }}
     >
+      <style>{`
+        @keyframes avatarGlow {
+          0% { box-shadow: 0 0 15px rgba(255, 122, 89, 0.15); }
+          50% { box-shadow: 0 0 28px rgba(255, 122, 89, 0.45); }
+          100% { box-shadow: 0 0 15px rgba(255, 122, 89, 0.15); }
+        }
+        .premium-avatar-glow {
+          animation: avatarGlow 5s ease-in-out infinite;
+        }
+        .press-scale {
+          transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.2s ease;
+        }
+        .press-scale:active {
+          transform: scale(0.96) !important;
+          opacity: 0.9;
+        }
+        .card-hover-lift {
+          transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.4s ease;
+        }
+        .card-hover-lift:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+        }
+        .tab-transition {
+          transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+      `}</style>
       <div
         className="scrollbar-hide"
         style={{
@@ -552,8 +1097,23 @@ const ProfilePage = () => {
           </div>
         </div>
 
-        <div style={{ padding: '0 20px 16px', marginTop: -40, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-          <div style={{ position: 'relative', width: 84, height: 84, marginBottom: 12 }}>
+        <div style={{ padding: '0 20px 16px', marginTop: -42, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+          <div
+            className="premium-avatar-glow"
+            style={{
+              position: 'relative',
+              width: 86,
+              height: 86,
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #FF7A59 0%, #FF9E85 100%)',
+              padding: '2px',
+              marginBottom: 14,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'transform 0.3s ease',
+            }}
+          >
             <img
               src={userAvatar}
               alt={displayName}
@@ -562,31 +1122,37 @@ const ProfilePage = () => {
                 height: '100%',
                 borderRadius: '50%',
                 objectFit: 'cover',
-                border: '2px solid #FF7A59',
-                boxShadow: '0 4px 16px rgba(255, 122, 89, 0.25)',
+                border: '3px solid #0B0D12',
               }}
             />
           </div>
 
-          <h1 style={{ fontSize: 20, fontWeight: 800, margin: '0 0 2px', letterSpacing: -0.4 }}>{displayName}</h1>
-          <p style={{ fontSize: 13, color: '#FF7A59', margin: '0 0 6px', fontWeight: 600 }}>{handleName}</p>
-          <p style={{ fontSize: 13, color: '#B8C0CC', margin: '0 0 16px', fontWeight: 500 }}>{userHeadline}</p>
+          <h1 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 3px', letterSpacing: -0.4, color: '#FFFFFF' }}>{displayName}</h1>
+          <p style={{ fontSize: 13, color: '#FF7A59', margin: '0 0 8px', fontWeight: 600, letterSpacing: -0.2 }}>{handleName}</p>
+          <p style={{ fontSize: 13, color: '#B8C0CC', margin: '0 0 20px', fontWeight: 500, lineHeight: 1.4, maxWidth: 280 }}>{userHeadline}</p>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginBottom: 20 }}>
+          {/* Skill Chips */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginBottom: 24 }}>
             {visibleSkills.map((skill) => (
               <div
                 key={skill.name}
+                className="press-scale"
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: 5,
-                  padding: '5px 12px',
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  gap: 6,
+                  padding: '6px 14px',
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
                   borderRadius: 100,
                   fontSize: 11,
                   fontWeight: 600,
-                  color: '#B8C0CC',
+                  color: '#E2E8F0',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
                 }}
               >
                 {skill.icon}
@@ -595,16 +1161,21 @@ const ProfilePage = () => {
             ))}
             {remainingSkillsCount > 0 && (
               <div
+                className="press-scale"
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  padding: '5px 10px',
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  padding: '6px 12px',
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
                   borderRadius: 100,
                   fontSize: 11,
                   fontWeight: 600,
                   color: '#FF7A59',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
                 }}
               >
                 +{remainingSkillsCount}
@@ -615,9 +1186,9 @@ const ProfilePage = () => {
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  padding: '5px 12px',
-                  background: 'rgba(255,255,255,0.04)',
-                  border: '1px dashed rgba(255,255,255,0.12)',
+                  padding: '6px 14px',
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  border: '1px dashed rgba(255, 255, 255, 0.1)',
                   borderRadius: 100,
                   fontSize: 11,
                   fontWeight: 600,
@@ -629,64 +1200,111 @@ const ProfilePage = () => {
             )}
           </div>
 
+          {/* Stats Card */}
           <div
             style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              gap: 20,
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr 1fr',
               width: '100%',
-              padding: '12px 0',
-              borderTop: '1px solid rgba(255, 255, 255, 0.05)',
-              borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-              marginBottom: 20,
+              background: 'rgba(255, 255, 255, 0.02)',
+              border: '1px solid rgba(255, 255, 255, 0.06)',
+              borderRadius: 16,
+              padding: '16px 8px',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+              marginBottom: 24,
+              position: 'relative',
             }}
           >
-            <div style={{ display: 'flex', gap: 6, fontSize: 13, fontWeight: 500, color: '#B8C0CC' }}>
-              <span style={{ color: '#FFFFFF', fontWeight: 700 }}>{dynamicSkills.length}</span> Skills
+            {/* Column 1 */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+              <GraduationCapIcon size={20} color="#FF7A59" />
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <span style={{ fontSize: 15, fontWeight: 800, color: '#FFFFFF' }}>{dynamicSkills.length}</span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: '#8F98A8', marginTop: 1 }}>Skills</span>
+              </div>
             </div>
-            <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(255,255,255,0.2)' }} />
-            <div style={{ display: 'flex', gap: 6, fontSize: 13, fontWeight: 500, color: '#B8C0CC' }}>
-              <span style={{ color: '#FFFFFF', fontWeight: 700 }}>{profileCompletion}%</span> Complete
+            
+            {/* Divider 1 */}
+            <div style={{ position: 'absolute', left: '33.33%', top: '20%', bottom: '20%', width: 1, background: 'rgba(255, 255, 255, 0.06)' }} />
+
+            {/* Column 2 */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+              <CheckCircleIcon size={20} color="#A78BFA" />
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <span style={{ fontSize: 15, fontWeight: 800, color: '#FFFFFF' }}>{profileCompletion}%</span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: '#8F98A8', marginTop: 1 }}>Complete</span>
+              </div>
             </div>
-            <div style={{ width: 4, height: 4, borderRadius: '50%', background: 'rgba(255,255,255,0.2)' }} />
-            <div style={{ display: 'flex', gap: 6, fontSize: 13, fontWeight: 500, color: '#B8C0CC' }}>
-              <span style={{ color: '#FFFFFF', fontWeight: 700 }}>{memberSince}</span> Joined
+
+            {/* Divider 2 */}
+            <div style={{ position: 'absolute', left: '66.66%', top: '20%', bottom: '20%', width: 1, background: 'rgba(255, 255, 255, 0.06)' }} />
+
+            {/* Column 3 */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+              <CalendarIcon size={20} color="#34D399" />
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <span style={{ fontSize: 15, fontWeight: 800, color: '#FFFFFF', whiteSpace: 'nowrap' }}>{memberSince}</span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: '#8F98A8', marginTop: 1 }}>Joined</span>
+              </div>
             </div>
           </div>
 
-          <div style={{ display: 'flex', width: '100%', gap: 10, paddingBottom: 8 }}>
+          {/* Action Buttons */}
+          <div style={{ display: 'flex', width: '100%', gap: 12, marginBottom: 24 }}>
             <button
               onClick={handleOpenEdit}
+              className="press-scale"
               style={{
-                flex: 2,
-                height: 44,
-                borderRadius: 12,
-                background: '#FF7A59',
+                flex: 1.8,
+                height: 46,
+                borderRadius: 14,
+                background: 'linear-gradient(135deg, #FF7A59 0%, #FF9E85 100%)',
                 border: 'none',
                 color: '#FFFFFF',
                 fontSize: 14,
                 fontWeight: 700,
                 cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                boxShadow: '0 4px 16px rgba(255, 122, 89, 0.2)',
+                transition: 'all 0.2s ease',
               }}
             >
+              <EditIcon size={14} />
               Edit Profile
             </button>
             <button
-              onClick={() => alert('Profile URL copied!')}
+              onClick={() => {
+                navigator.clipboard.writeText(window.location.href);
+                setToastMsg('Profile link copied!');
+                setTimeout(() => setToastMsg(null), 3000);
+              }}
+              className="press-scale"
               style={{
-                flex: 1,
-                height: 44,
-                borderRadius: 12,
-                background: 'transparent',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
+                flex: 1.2,
+                height: 46,
+                borderRadius: 14,
+                background: 'rgba(255, 255, 255, 0.04)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
                 color: '#FFFFFF',
                 fontSize: 14,
                 fontWeight: 700,
                 cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 8,
+                transition: 'all 0.2s ease',
               }}
             >
-              Share
+              <ShareProfileIcon size={14} />
+              Share Profile
             </button>
           </div>
         </div>
@@ -695,389 +1313,89 @@ const ProfilePage = () => {
           style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-            padding: '0 20px',
+            justifyContent: 'space-around',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+            padding: '0 10px',
+            background: 'rgba(11, 13, 18, 0.5)',
+            backdropFilter: 'blur(10px)',
             position: 'relative',
           }}
         >
-          <div style={{ display: 'flex', gap: 20 }}>
-            {['Projects', 'Reels', 'Saved'].map((tab) => {
-              const isActive = activeTab === tab;
-              return (
-                <button
-                  key={tab}
-                  onClick={() => {
-                    setActiveTab(tab);
-                    setShowMoreMenu(false);
-                  }}
-                  style={{
-                    padding: '14px 0',
-                    background: 'none',
-                    border: 'none',
-                    borderBottom: isActive ? '2px solid #FF7A59' : '2px solid transparent',
-                    color: isActive ? '#FFFFFF' : 'rgba(255,255,255,0.5)',
-                    fontSize: 13,
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                  }}
-                >
-                  {tab}
-                </button>
-              );
-            })}
-          </div>
-
-          <div style={{ position: 'relative' }}>
-            <button
-              onClick={() => setShowMoreMenu(!showMoreMenu)}
-              style={{
-                padding: '14px 0',
-                background: 'none',
-                border: 'none',
-                color: ['Models', 'Games', 'About'].includes(activeTab) ? '#FF7A59' : 'rgba(255,255,255,0.5)',
-                fontSize: 13,
-                fontWeight: 700,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 4,
-              }}
-            >
-              {['Models', 'Games', 'About'].includes(activeTab) ? activeTab : 'More'}
-              <ChevronDownIcon size={14} />
-            </button>
-
-            {showMoreMenu && (
-              <div
+          {tabsList.map((tab) => {
+            const isActive = activeTab === tab.id;
+            const activeColor = '#FF7A59';
+            const inactiveColor = 'rgba(255, 255, 255, 0.4)';
+            
+            return (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                }}
+                className="press-scale tab-transition"
                 style={{
-                  position: 'absolute',
-                  top: '100%',
-                  right: 0,
-                  width: 130,
-                  background: '#121620',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: 12,
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-                  padding: '6px',
-                  zIndex: 40,
+                  flex: 1,
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: 2,
+                  alignItems: 'center',
+                  gap: 4,
+                  padding: '12px 0 10px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  position: 'relative',
+                  transform: isActive ? 'scale(1.05)' : 'scale(1)',
+                  transition: 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)',
                 }}
               >
-                {['Models', 'Games', 'About'].map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => {
-                      setActiveTab(tab);
-                      setShowMoreMenu(false);
-                    }}
-                    style={{
-                      padding: '8px 12px',
-                      background: activeTab === tab ? 'rgba(255,255,255,0.05)' : 'transparent',
-                      border: 'none',
-                      borderRadius: 8,
-                      color: activeTab === tab ? '#FF7A59' : '#B8C0CC',
-                      fontSize: 12,
-                      fontWeight: 600,
-                      textAlign: 'left',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    {tab}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+                {tab.icon(isActive ? activeColor : inactiveColor)}
+                <span
+                  style={{
+                    fontSize: 10,
+                    fontWeight: isActive ? 700 : 500,
+                    color: isActive ? '#FFFFFF' : inactiveColor,
+                    transition: 'color 0.3s ease',
+                  }}
+                >
+                  {tab.label}
+                </span>
+
+                {/* Coral Underline */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: '20%',
+                    right: '20%',
+                    height: 2,
+                    background: activeColor,
+                    borderRadius: '2px 2px 0 0',
+                    opacity: isActive ? 1 : 0,
+                    boxShadow: isActive ? '0 0 8px #FF7A59' : 'none',
+                    transform: isActive ? 'scaleX(1)' : 'scaleX(0)',
+                    transition: 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.3s ease',
+                  }}
+                />
+              </button>
+            );
+          })}
         </div>
 
-        <div style={{ padding: 12 }}>
-          {activeTab === 'Projects' && (
-            <>
-              {isLoadingProjects ? (
-                <div style={{ textAlign: 'center', padding: '40px 20px', color: '#B8C0CC', fontSize: 13 }}>
-                  Loading your portfolio...
-                </div>
-              ) : userProjects.length > 0 ? (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                  {userProjects.map((proj, index) => {
-                    const projId = proj.id ?? proj._id ?? index;
-                    const engagement = getEngagement(proj);
-                    const isLiked = Boolean(engagement.viewerHasLiked);
-                    const isTall = proj.mode === 'portrait';
-                    const imageSrc = proj.previewUrl || proj.imageUrl || BANNER;
-                    return (
-                      <div
-                        key={projId}
-                        onClick={() => navigate(`/app/project/${projId}`)}
-                        style={{
-                          position: 'relative',
-                          borderRadius: 16,
-                          overflow: 'hidden',
-                          aspectRatio: isTall ? '0.78' : '1.1',
-                          cursor: 'pointer',
-                          background: '#121620',
-                          border: '1px solid rgba(255,255,255,0.04)',
-                        }}
-                      >
-                        <img src={imageSrc} alt={proj.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        
-                        {/* Sleek Action Buttons */}
-                        <div
-                          style={{
-                            position: 'absolute',
-                            top: 8,
-                            right: 8,
-                            display: 'flex',
-                            gap: 6,
-                            zIndex: 10,
-                          }}
-                        >
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleOpenEditProject(proj);
-                            }}
-                            style={{
-                              width: 28,
-                              height: 28,
-                              borderRadius: '50%',
-                              background: 'rgba(15, 23, 42, 0.65)',
-                              backdropFilter: 'blur(8px)',
-                              WebkitBackdropFilter: 'blur(8px)',
-                              border: '1px solid rgba(255, 255, 255, 0.12)',
-                              color: '#FFFFFF',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              cursor: 'pointer',
-                              transition: 'all 0.2s ease',
-                              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.background = '#FF7A59';
-                              e.currentTarget.style.borderColor = '#FF7A59';
-                              e.currentTarget.style.transform = 'scale(1.08)';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.background = 'rgba(15, 23, 42, 0.65)';
-                              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.12)';
-                              e.currentTarget.style.transform = 'scale(1)';
-                            }}
-                            title="Edit Project"
-                          >
-                            <EditIcon size={13} />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleOpenDeleteProject(proj);
-                            }}
-                            style={{
-                              width: 28,
-                              height: 28,
-                              borderRadius: '50%',
-                              background: 'rgba(15, 23, 42, 0.65)',
-                              backdropFilter: 'blur(8px)',
-                              WebkitBackdropFilter: 'blur(8px)',
-                              border: '1px solid rgba(255, 255, 255, 0.12)',
-                              color: '#FF6B6B',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              cursor: 'pointer',
-                              transition: 'all 0.2s ease',
-                              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.background = '#FF4A4A';
-                              e.currentTarget.style.borderColor = '#FF4A4A';
-                              e.currentTarget.style.color = '#FFFFFF';
-                              e.currentTarget.style.transform = 'scale(1.08)';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.background = 'rgba(15, 23, 42, 0.65)';
-                              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.12)';
-                              e.currentTarget.style.color = '#FF6B6B';
-                              e.currentTarget.style.transform = 'scale(1)';
-                            }}
-                            title="Delete Project"
-                          >
-                            <TrashIcon size={13} />
-                          </button>
-                        </div>
-
-                        <div
-                          style={{
-                            position: 'absolute',
-                            inset: 0,
-                            background: 'linear-gradient(0deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 50%)',
-                            pointerEvents: 'none',
-                          }}
-                        />
-                        <div
-                          style={{
-                            position: 'absolute',
-                            bottom: 10,
-                            left: 10,
-                            background: 'rgba(255,255,255,0.1)',
-                            backdropFilter: 'blur(8px)',
-                            WebkitBackdropFilter: 'blur(8px)',
-                            padding: '3px 8px',
-                            borderRadius: 100,
-                            fontSize: 9,
-                            fontWeight: 700,
-                            color: '#FFFFFF',
-                            border: '1px solid rgba(255,255,255,0.06)',
-                          }}
-                        >
-                          {proj.category}
-                        </div>
-                        <div
-                          onClick={(event) => handleLikeProject(proj, event)}
-                          style={{
-                            position: 'absolute',
-                            bottom: 8,
-                            right: 10,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 4,
-                            fontSize: 11,
-                            fontWeight: 700,
-                            color: isLiked ? '#FF7A59' : '#FFFFFF',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          <HeartIcon filled={isLiked} size={14} />
-                          <span>{formatCount(engagement.likesCount)}</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div style={{ textAlign: 'center', padding: '60px 20px', color: '#B8C0CC' }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>No projects published yet</div>
-                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', maxWidth: 260, margin: '0 auto 20px', lineHeight: '1.6' }}>
-                    Upload your WebGL builds, 3D files, or 2D artwork and showcase them on your profile.
-                  </p>
-                  <button
-                    onClick={() => navigate('/app/upload')}
-                    style={{
-                      background: 'linear-gradient(135deg, #FF7A59 0%, #FF522C 100%)',
-                      border: 'none',
-                      borderRadius: 100,
-                      color: '#FFFFFF',
-                      padding: '10px 22px',
-                      fontSize: 12,
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      boxShadow: '0 4px 15px rgba(255, 122, 89, 0.25)',
-                    }}
-                  >
-                    Upload First Project
-                  </button>
-                </div>
-              )}
-            </>
-          )}
-
-          {activeTab === 'Reels' && (
-            <div style={{ textAlign: 'center', padding: '40px 20px', color: '#B8C0CC', fontSize: 13 }}>
-              No shared reels yet.
-            </div>
-          )}
-
-          {activeTab === 'Saved' && (
-            <>
-              {savedItems.length > 0 ? (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                  {savedItems.map((item, index) => {
-                    const itemId = item.id ?? item._id ?? `${item.contentType}-${index}`;
-                    const canOpen = item.contentType === 'project';
-
-                    return (
-                      <div
-                        key={itemId}
-                        onClick={() => {
-                          if (canOpen) {
-                            navigate(`/app/project/${item.id || item._id}`);
-                          }
-                        }}
-                        style={{
-                          position: 'relative',
-                          borderRadius: 16,
-                          overflow: 'hidden',
-                          aspectRatio: '1 / 1.15',
-                          cursor: canOpen ? 'pointer' : 'default',
-                          background: '#121620',
-                          border: '1px solid rgba(255,255,255,0.04)',
-                        }}
-                      >
-                        <img
-                          src={item.thumbnail}
-                          alt={item.title}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        />
-                        <div
-                          style={{
-                            position: 'absolute',
-                            inset: 0,
-                            background: 'linear-gradient(0deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.15) 55%, rgba(0,0,0,0.1) 100%)',
-                            pointerEvents: 'none',
-                          }}
-                        />
-                        <div
-                          style={{
-                            position: 'absolute',
-                            top: 10,
-                            left: 10,
-                            background: 'rgba(255,255,255,0.1)',
-                            backdropFilter: 'blur(8px)',
-                            WebkitBackdropFilter: 'blur(8px)',
-                            padding: '3px 8px',
-                            borderRadius: 100,
-                            fontSize: 9,
-                            fontWeight: 700,
-                            color: '#FFFFFF',
-                            border: '1px solid rgba(255,255,255,0.06)',
-                          }}
-                        >
-                          {item.kind}
-                        </div>
-                        <div
-                          style={{
-                            position: 'absolute',
-                            bottom: 10,
-                            left: 10,
-                            right: 10,
-                            zIndex: 2,
-                          }}
-                        >
-                          <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 4 }}>{item.title}</div>
-                          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.68)' }}>
-                            {item.subtitle}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div style={{ textAlign: 'center', padding: '40px 20px', color: '#B8C0CC', fontSize: 13 }}>
-                  Saved showcases will appear here.
-                </div>
-              )}
-            </>
-          )}
-
-          {['Models', 'Games', 'About'].includes(activeTab) && (
-            <div style={{ textAlign: 'center', padding: '40px 20px', color: '#B8C0CC', fontSize: 13 }}>
-              {activeTab} content is currently empty.
-            </div>
-          )}
+        <div style={{ padding: '16px 12px 100px' }}>
+          {activeTab === 'Projects' &&
+            renderGrid(userProjects, true, 'No projects published yet', 'Upload your WebGL builds, 3D files, or 2D artwork and showcase them on your profile.')}
+          
+          {activeTab === 'Liked' &&
+            renderGrid(likedItems, false, 'No liked showcases yet', 'Projects you react to will be displayed here.')}
+          
+          {activeTab === 'Comments' &&
+            renderGrid(commentedItems, false, 'No commented showcases yet', 'Projects you leave responses on will appear here.')}
+          
+          {activeTab === 'Collaborations' &&
+            renderGrid(collabItems, false, 'No collaborative showcases yet', 'Projects where you are tagged as a collaborator will show up here.')}
+          
+          {activeTab === 'Saved' &&
+            renderGrid(savedItems, false, 'No saved showcases yet', 'Showcases you bookmark will appear here.')}
         </div>
       </div>
 
