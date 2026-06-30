@@ -5,7 +5,15 @@ import WebGLGamePlayer from '../../components/WebGLGamePlayer'
 import GltfAssetViewer from '../../components/GltfAssetViewer'
 import wavingVideo from '../../assets/wave.mp4'
 import logoImg from '../../assets/logo.jpg'
-import { fetchContent, updateContentEngagement } from '../../lib/content'
+import {
+  createCommentReply,
+  createPostComment,
+  fetchContent,
+  fetchPostEngagement,
+  togglePostLike,
+  togglePostSave,
+  updateContentEngagement,
+} from '../../lib/content'
 import {
   PlusIcon,
   HeartIcon,
@@ -16,8 +24,6 @@ import {
   CloseIcon,
 } from '../../components/icons/Icons'
 import './HomePage.css'
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
 
 const DEFAULT_AVATAR =
   'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/19f781f2a-1e76-4c62-8f73-55c5248d45ab.png'
@@ -302,6 +308,12 @@ function HomePage() {
   const [commentText, setCommentText] = useState('')
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const feedContainerRef = useRef(null)
+  const localIdRef = useRef(0)
+
+  const nextLocalId = () => {
+    localIdRef.current += 1
+    return `local-${localIdRef.current}`
+  }
 
   const loadContent = useCallback(async (signal) => {
     try {
@@ -341,7 +353,7 @@ function HomePage() {
 
   useEffect(() => {
     const controller = new AbortController()
-    loadContent(controller.signal)
+    Promise.resolve().then(() => loadContent(controller.signal))
 
     const handleProjectPublished = () => {
       loadContent()
@@ -377,14 +389,31 @@ function HomePage() {
   const updateItemInState = (targetId, updater) => {
     setFeedState((prev) => ({
       ...prev,
-      items: prev.items.map((item) => (getReelKey(item) === targetId ? updater(item) : item)),
+      items: prev.items.map((item) => {
+        const itemKey = getReelKey(item)
+        const isMatch =
+          itemKey === targetId ||
+          item.id === targetId ||
+          item.contentId === targetId ||
+          (itemKey && typeof itemKey === 'string' && itemKey.includes(targetId)) ||
+          (targetId && typeof targetId === 'string' && targetId.includes(itemKey))
+        return isMatch ? updater(item) : item
+      }),
     }))
 
     setExpandedProj((prev) => {
-      if (!prev || getReelKey(prev) !== targetId) {
+      if (!prev) return prev
+      const itemKey = getReelKey(prev)
+      const isMatch =
+        itemKey === targetId ||
+        prev.id === targetId ||
+        prev.contentId === targetId ||
+        (itemKey && typeof itemKey === 'string' && itemKey.includes(targetId)) ||
+        (targetId && typeof targetId === 'string' && targetId.includes(itemKey))
+
+      if (!isMatch) {
         return prev
       }
-
       return updater(prev)
     })
   }
@@ -451,6 +480,50 @@ function HomePage() {
     }))
   }
 
+  const syncProjectEngagement = (postId, engagement) => {
+    if (!postId || !engagement) {
+      return
+    }
+
+    const targetId = `project:${postId}`
+    updateItemInState(targetId, (item) => ({
+      ...item,
+      engagement: {
+        ...(item.engagement ?? {}),
+        ...engagement,
+      },
+    }))
+    setCommentTarget((prev) =>
+      prev?.contentType === 'project' && String(prev.contentId) === String(postId)
+        ? {
+            ...prev,
+            engagement: {
+              ...(prev.engagement ?? {}),
+              ...engagement,
+            },
+          }
+        : prev,
+    )
+  }
+
+  const mutateProjectToggle = async (reel, action, requestFn) => {
+    const targetId = getReelKey(reel)
+    const previous = getCounts(reel)
+
+    updateItemInState(targetId, (item) => applyLocalEngagement(item, action))
+
+    try {
+      const result = await requestFn()
+      syncProjectEngagement(reel.contentId, result.engagement)
+    } catch (error) {
+      updateItemInState(targetId, (item) => ({
+        ...item,
+        engagement: previous,
+      }))
+      throw error
+    }
+  }
+
   const mutateEngagement = async (reel, action, payload = {}) => {
     const targetId = getReelKey(reel)
     const isBackendPost = reel.contentType && reel.contentType !== 'demo'
@@ -463,9 +536,9 @@ function HomePage() {
     if (!isBackendPost) {
       const localComment =
         action === 'comment'
-          ? {
-              commentId: `local-${Date.now()}`,
-              userId: user?.id || 'local',
+              ? {
+                  commentId: nextLocalId(),
+                  userId: user?.id || 'local',
               username: user?.username || 'guest',
               name: user?.name || 'Guest',
               avatar: user?.avatar || DEFAULT_AVATAR,
@@ -477,6 +550,16 @@ function HomePage() {
       updateItemInState(targetId, (item) =>
         applyLocalEngagement(item, action, { comment: localComment }),
       )
+      return
+    }
+
+    if (reel.contentType === 'project' && action === 'react') {
+      await mutateProjectToggle(reel, action, () => togglePostLike(token, reel.contentId))
+      return
+    }
+
+    if (reel.contentType === 'project' && action === 'save') {
+      await mutateProjectToggle(reel, action, () => togglePostSave(token, reel.contentId))
       return
     }
 
@@ -494,7 +577,23 @@ function HomePage() {
       return
     }
 
-    await mutateEngagement(reel, 'react')
+    try {
+      await mutateEngagement(reel, 'react')
+    } catch (error) {
+      window.alert(error.message || 'Failed to update like.')
+    }
+  }
+
+  const handleMediaDoubleClick = async (reel) => {
+    if (isGuest || getCounts(reel).viewerHasLiked) {
+      return
+    }
+
+    try {
+      await mutateEngagement(reel, 'react')
+    } catch (error) {
+      window.alert(error.message || 'Failed to like post.')
+    }
   }
 
   const handleSave = async (reel) => {
@@ -503,7 +602,11 @@ function HomePage() {
       return
     }
 
-    await mutateEngagement(reel, 'save')
+    try {
+      await mutateEngagement(reel, 'save')
+    } catch (error) {
+      window.alert(error.message || 'Failed to update save.')
+    }
   }
 
   const handleShare = async (reel) => {
@@ -533,6 +636,22 @@ function HomePage() {
       return
     }
 
+    if (reel.contentType === 'project') {
+      fetchPostEngagement(token, reel.contentId)
+        .then((result) => {
+          syncProjectEngagement(reel.contentId, result.engagement)
+          setCommentTarget({
+            ...reel,
+            engagement: result.engagement,
+          })
+          setCommentText('')
+        })
+        .catch((error) => {
+          window.alert(error.message || 'Failed to load comments.')
+        })
+      return
+    }
+
     setCommentTarget(reel)
     setCommentText('')
   }
@@ -549,7 +668,7 @@ function HomePage() {
     try {
       if (commentTarget.contentType === 'demo') {
         const localComment = {
-          commentId: `local-${Date.now()}`,
+          commentId: nextLocalId(),
           userId: user?.id || 'local',
           username: user?.username || 'guest',
           name: user?.name || 'Guest',
@@ -561,6 +680,50 @@ function HomePage() {
         updateItemInState(commentTarget.id, (item) =>
           applyLocalEngagement(item, 'comment', { comment: localComment }),
         )
+      } else if (commentTarget.contentType === 'project') {
+        const optimisticComment = {
+          commentId: `optimistic-${nextLocalId()}`,
+          userId: user?.id || user?._id || 'me',
+          username: user?.username || 'me',
+          name: user?.name || 'Me',
+          avatar: user?.avatar || DEFAULT_AVATAR,
+          text: commentText.trim(),
+          createdAt: new Date().toISOString(),
+          replies: [],
+        }
+        const previous = getCounts(commentTarget)
+
+        updateItemInState(`project:${commentTarget.contentId}`, (item) =>
+          applyLocalEngagement(item, 'comment', { comment: optimisticComment }),
+        )
+        setCommentTarget((prev) => prev
+          ? applyLocalEngagement(prev, 'comment', { comment: optimisticComment })
+          : prev)
+
+        try {
+          const result = await createPostComment(token, commentTarget.contentId, {
+            text: commentText.trim(),
+          })
+          syncProjectEngagement(commentTarget.contentId, result.engagement)
+          setCommentTarget((prev) => prev
+            ? {
+                ...prev,
+                engagement: result.engagement,
+              }
+            : prev)
+        } catch (error) {
+          updateItemInState(`project:${commentTarget.contentId}`, (item) => ({
+            ...item,
+            engagement: previous,
+          }))
+          setCommentTarget((prev) => prev
+            ? {
+                ...prev,
+                engagement: previous,
+              }
+            : prev)
+          throw error
+        }
       } else {
         const result = await updateContentEngagement(token, commentTarget.contentType, commentTarget.contentId, {
           action: 'comment',
@@ -571,13 +734,86 @@ function HomePage() {
       }
 
       setCommentText('')
-      setCommentTarget(null)
     } catch (error) {
       window.alert(error.message || 'Failed to add comment.')
     } finally {
       setIsSubmittingComment(false)
     }
   }
+
+  const handleReply = async (reel, commentId) => {
+    const replyText = window.prompt('Write a reply')
+
+    if (!replyText || !replyText.trim()) {
+      return
+    }
+
+    try {
+      const result = await createCommentReply(token, commentId, { text: replyText.trim() })
+      syncProjectEngagement(reel.contentId, result.engagement)
+      setCommentTarget((prev) => prev
+        ? {
+            ...prev,
+            engagement: result.engagement,
+          }
+        : prev)
+    } catch (error) {
+      window.alert(error.message || 'Failed to add reply.')
+    }
+  }
+
+  const renderCommentThread = (reel, comment, depth = 0) => (
+    <div key={comment.commentId} style={{ marginLeft: depth > 0 ? 18 : 0 }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: 12,
+        }}
+      >
+        <img
+          src={(user && comment.username === user.username && user.avatar) ? user.avatar : (comment.avatar || DEFAULT_AVATAR)}
+          alt={comment.username || comment.name || 'member'}
+          style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+        />
+        <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+          <div style={{ fontSize: 13, color: '#f3f4f6', lineHeight: '1.4' }}>
+            <span style={{ fontWeight: 700, color: '#fff', marginRight: 6 }}>{comment.username || comment.name || 'member'}</span>
+            {comment.text}
+          </div>
+          <div style={{ display: 'flex', gap: 16, marginTop: 4, fontSize: 11, color: 'rgba(255, 255, 255, 0.45)', fontWeight: 600 }}>
+            <span>{(() => {
+              if (!comment.createdAt) return 'Just now'
+              const now = new Date()
+              const date = new Date(comment.createdAt)
+              const seconds = Math.floor((now - date) / 1000)
+              if (seconds < 60) return 'now'
+              const minutes = Math.floor(seconds / 60)
+              if (minutes < 60) return `${minutes}m`
+              const hours = Math.floor(minutes / 60)
+              if (hours < 24) return `${hours}h`
+              const days = Math.floor(hours / 24)
+              return `${days}d`
+            })()}</span>
+            {reel.contentType === 'project' ? (
+              <button
+                onClick={() => handleReply(reel, comment.commentId)}
+                style={{ background: 'none', border: 'none', color: 'rgba(255, 255, 255, 0.45)', font: 'inherit', fontWeight: 700, padding: 0, cursor: 'pointer' }}
+              >
+                Reply
+              </button>
+            ) : null}
+          </div>
+        </div>
+      </div>
+
+      {(comment.replies ?? []).length > 0 ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 14 }}>
+          {comment.replies.map((reply) => renderCommentThread(reel, reply, depth + 1))}
+        </div>
+      ) : null}
+    </div>
+  )
 
   const safeActiveIdx = Math.min(
     activeIdx,
@@ -652,6 +888,7 @@ function HomePage() {
             <div key={reel.id} className="reel-card">
               {reel.type === 'game' ? (
                 <div
+                  onDoubleClick={() => handleMediaDoubleClick(reel)}
                   style={{
                     width: '100%',
                     height: '100%',
@@ -673,6 +910,7 @@ function HomePage() {
                 </div>
               ) : reel.type === '3d' ? (
                 <div
+                  onDoubleClick={() => handleMediaDoubleClick(reel)}
                   style={{
                     width: '100%',
                     height: '100%',
@@ -693,6 +931,7 @@ function HomePage() {
               ) : reel.video ? (
                 <video
                   src={reel.video}
+                  onDoubleClick={() => handleMediaDoubleClick(reel)}
                   autoPlay={index === safeActiveIdx}
                   muted
                   loop
@@ -700,7 +939,12 @@ function HomePage() {
                   className="reel-media"
                 />
               ) : (
-                <img src={reel.image} alt={reel.projectTitle} className="reel-media" />
+                <img
+                  src={reel.image}
+                  alt={reel.projectTitle}
+                  className="reel-media"
+                  onDoubleClick={() => handleMediaDoubleClick(reel)}
+                />
               )}
 
               <div className="dark-overlay" />
@@ -800,83 +1044,63 @@ function HomePage() {
 
       {commentTarget ? (
         <div className="details-overlay" onClick={() => setCommentTarget(null)}>
-          <div className="details-card anim-fade-up" onClick={(event) => event.stopPropagation()}>
-            <div className="details-header">
+          <div className="details-card anim-fade-up" onClick={(event) => event.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', height: '80vh', maxHeight: 540, borderRadius: '24px 24px 0 0', padding: '16px 20px 24px' }}>
+            <div className="details-header" style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: 12, marginBottom: 16 }}>
               <div className="details-title-group">
-                <span className="details-subtitle">Comments</span>
-                <h2 className="details-main-title">{commentTarget.projectTitle}</h2>
+                <span className="details-subtitle" style={{ color: '#FF7A59', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 }}>Comments</span>
+                <h2 className="details-main-title" style={{ fontSize: 16, fontWeight: 700, margin: '2px 0 0' }}>{commentTarget.projectTitle}</h2>
               </div>
-              <button onClick={() => setCommentTarget(null)} className="close-btn">
-                <CloseIcon size={18} />
+              <button onClick={() => setCommentTarget(null)} className="close-btn" style={{ background: 'rgba(255,255,255,0.06)', border: 'none', width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff' }}>
+                <CloseIcon size={14} />
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 280, overflowY: 'auto' }}>
+            <div className="scrollbar-hide" style={{ display: 'flex', flexDirection: 'column', gap: 18, flex: 1, overflowY: 'auto', paddingRight: 4, marginBottom: 16 }}>
               {(commentTarget.engagement?.comments ?? []).length > 0 ? (
-                commentTarget.engagement.comments.map((comment) => (
-                  <div
-                    key={comment.commentId}
-                    style={{
-                      padding: '12px 14px',
-                      borderRadius: 16,
-                      background: 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(255,255,255,0.08)',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                      <img
-                        src={comment.avatar || DEFAULT_AVATAR}
-                        alt={comment.username || comment.name || 'member'}
-                        style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }}
-                      />
-                      <div>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>
-                          {comment.username || comment.name || 'CreativeVerse member'}
-                        </div>
-                        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)' }}>
-                          {comment.createdAt ? new Date(comment.createdAt).toLocaleString() : 'Just now'}
-                        </div>
-                      </div>
-                    </div>
-                    <p style={{ margin: 0, color: '#e7eaf0', fontSize: 13, lineHeight: 1.5 }}>
-                      {comment.text}
-                    </p>
-                  </div>
-                ))
+                commentTarget.engagement.comments.map((comment) => renderCommentThread(commentTarget, comment))
               ) : (
-                <div style={{ color: 'rgba(255,255,255,0.65)', fontSize: 13 }}>
-                  No comments yet. Start the conversation.
+                <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, textAlign: 'center', marginTop: 40 }}>
+                  No comments yet.<br />Start the conversation.
                 </div>
               )}
             </div>
 
-            <form onSubmit={submitComment} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <textarea
-                value={commentText}
-                onChange={(event) => setCommentText(event.target.value)}
-                rows={4}
-                placeholder={isGuest ? 'Sign in to comment on this post.' : 'Write a thoughtful comment...'}
-                disabled={isGuest || isSubmittingComment}
-                style={{
-                  width: '100%',
-                  borderRadius: 18,
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  color: '#fff',
-                  padding: 14,
-                  resize: 'none',
-                  outline: 'none',
-                  fontSize: 14,
-                }}
-              />
-              <button
-                type="submit"
-                disabled={isGuest || isSubmittingComment || !commentText.trim()}
-                className="btn btn--primary-sm"
-                style={{ opacity: isGuest || isSubmittingComment || !commentText.trim() ? 0.65 : 1 }}
-              >
-                {isSubmittingComment ? 'Posting...' : isGuest ? 'Sign in to comment' : 'Post Comment'}
-              </button>
+            <form onSubmit={submitComment} style={{ display: 'flex', alignItems: 'center', gap: 12, borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 16 }}>
+              <img src={user?.avatar || DEFAULT_AVATAR} alt="Me" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.05)', borderRadius: 24, padding: '6px 14px 6px 16px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <input
+                  type="text"
+                  value={commentText}
+                  onChange={(event) => setCommentText(event.target.value)}
+                  placeholder={isGuest ? 'Sign in to comment...' : 'Add a comment...'}
+                  disabled={isGuest || isSubmittingComment}
+                  style={{
+                    flex: 1,
+                    background: 'none',
+                    border: 'none',
+                    color: '#fff',
+                    outline: 'none',
+                    fontSize: 13,
+                    height: 28,
+                  }}
+                />
+                <button
+                  type="submit"
+                  disabled={isGuest || isSubmittingComment || !commentText.trim()}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: commentText.trim() ? '#FF7A59' : 'rgba(255,255,255,0.25)',
+                    fontWeight: 700,
+                    fontSize: 13,
+                    cursor: commentText.trim() ? 'pointer' : 'default',
+                    paddingLeft: 8,
+                    transition: 'color 0.2s',
+                  }}
+                >
+                  {isSubmittingComment ? '...' : 'Post'}
+                </button>
+              </div>
             </form>
           </div>
         </div>

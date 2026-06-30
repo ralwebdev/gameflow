@@ -1,7 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { fetchProject, updateContentEngagement } from '../../lib/content';
+import {
+  createCommentReply,
+  createPostComment,
+  fetchProject,
+  togglePostLike,
+  togglePostSave,
+  updateContentEngagement,
+} from '../../lib/content';
 import GltfAssetViewer from '../../components/GltfAssetViewer';
 import WebGLGamePlayer from '../../components/WebGLGamePlayer';
 import GuestBanner from '../../components/layout/GuestBanner';
@@ -59,13 +66,16 @@ const ProjectDetailPage = () => {
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const [liked, setLiked] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [toast, setToast] = useState(null);
+  const localIdRef = useRef(0);
+
+  const nextLocalId = () => {
+    localIdRef.current += 1;
+    return `local-${localIdRef.current}`;
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -75,8 +85,6 @@ const ProjectDetailPage = () => {
         const data = await fetchProject(projectId, token);
         if (isMounted && data?.project) {
           setProject(data.project);
-          setLiked(Boolean(data.project.engagement?.viewerHasLiked));
-          setSaved(Boolean(data.project.engagement?.viewerHasSaved));
           setShowComments(false);
         }
       } catch (err) {
@@ -109,6 +117,8 @@ const ProjectDetailPage = () => {
 
   const engagement = project?.engagement ?? {};
   const comments = Array.isArray(engagement.comments) ? engagement.comments : [];
+  const liked = Boolean(engagement.viewerHasLiked ?? engagement.isLiked);
+  const saved = Boolean(engagement.viewerHasSaved ?? engagement.isSaved);
 
   const syncProject = (updatedContent) => {
     if (!updatedContent) {
@@ -127,8 +137,6 @@ const ProjectDetailPage = () => {
           }
         : updatedContent,
     );
-    setLiked(Boolean(updatedContent.engagement?.viewerHasLiked));
-    setSaved(Boolean(updatedContent.engagement?.viewerHasSaved));
   };
 
   const mutateEngagement = async (action, payload = {}) => {
@@ -142,6 +150,50 @@ const ProjectDetailPage = () => {
               ? 'save posts'
               : 'share posts';
       handleGuestAction(actionLabel);
+      return;
+    }
+
+    if (action === 'react') {
+      const previous = engagement;
+      syncProject({
+        engagement: {
+          ...engagement,
+          viewerHasLiked: !liked,
+          isLiked: !liked,
+          likesCount: Math.max(0, Number(engagement.likesCount || 0) + (liked ? -1 : 1)),
+        },
+      });
+
+      try {
+        const result = await togglePostLike(token, projectId);
+        syncProject({ engagement: result.engagement });
+      } catch (error) {
+        syncProject({ engagement: previous });
+        throw error;
+      }
+
+      return;
+    }
+
+    if (action === 'save') {
+      const previous = engagement;
+      syncProject({
+        engagement: {
+          ...engagement,
+          viewerHasSaved: !saved,
+          isSaved: !saved,
+          savesCount: Math.max(0, Number(engagement.savesCount || 0) + (saved ? -1 : 1)),
+        },
+      });
+
+      try {
+        const result = await togglePostSave(token, projectId);
+        syncProject({ engagement: result.engagement });
+      } catch (error) {
+        syncProject({ engagement: previous });
+        throw error;
+      }
+
       return;
     }
 
@@ -177,16 +229,111 @@ const ProjectDetailPage = () => {
     }
 
     setIsSubmittingComment(true);
+    const previous = engagement;
     try {
-      await mutateEngagement('comment', { commentText: commentText.trim() });
+      const optimisticComment = {
+        commentId: `optimistic-${nextLocalId()}`,
+        userId: user?.id || user?._id || 'me',
+        username: user?.username || 'me',
+        name: user?.name || 'Me',
+        avatar: user?.avatar || AVATAR,
+        text: commentText.trim(),
+        createdAt: new Date().toISOString(),
+        replies: [],
+      };
+      syncProject({
+        engagement: {
+          ...engagement,
+          commentsCount: Number(engagement.commentsCount || 0) + 1,
+          comments: [optimisticComment, ...comments],
+        },
+      });
+
+      const result = await createPostComment(token, projectId, { text: commentText.trim() });
+      syncProject({ engagement: result.engagement });
       setCommentText('');
       setShowComments(true);
     } catch (err) {
+      syncProject({ engagement: previous });
       alert(err.message || 'Failed to add comment.');
     } finally {
       setIsSubmittingComment(false);
     }
   };
+
+  const handleReply = async (commentId) => {
+    if (isGuest) {
+      handleGuestAction('reply to comments');
+      return;
+    }
+
+    const text = window.prompt('Write a reply');
+
+    if (!text || !text.trim()) {
+      return;
+    }
+
+    try {
+      const result = await createCommentReply(token, commentId, { text: text.trim() });
+      syncProject({ engagement: result.engagement });
+      setShowComments(true);
+    } catch (error) {
+      alert(error.message || 'Failed to add reply.');
+    }
+  };
+
+  const renderCommentThread = (comment, depth = 0) => (
+    <div
+      key={comment.commentId}
+      style={{
+        padding: '12px 14px',
+        borderRadius: 16,
+        background: '#f6f7fb',
+        border: '1px solid rgba(26,26,46,0.08)',
+        marginLeft: depth > 0 ? 18 : 0,
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+        <img
+          src={comment.avatar || AVATAR}
+          alt={comment.username || comment.name || 'commenter'}
+          style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }}
+        />
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#1a1a2e' }}>
+            {comment.username || comment.name || 'CreativeVerse member'}
+          </div>
+          <div style={{ fontSize: 11, color: '#7a7a8e' }}>
+            {comment.createdAt ? new Date(comment.createdAt).toLocaleString() : 'Just now'}
+          </div>
+        </div>
+      </div>
+      <p style={{ margin: '0 0 8px', fontSize: 14, color: '#4b4b62', lineHeight: 1.5 }}>
+        {comment.text}
+      </p>
+      <button
+        type="button"
+        onClick={() => handleReply(comment.commentId)}
+        style={{
+          background: 'none',
+          border: 'none',
+          padding: 0,
+          color: '#7a7a8e',
+          fontSize: 12,
+          fontWeight: 700,
+          cursor: 'pointer',
+        }}
+      >
+        Reply
+      </button>
+
+      {(comment.replies ?? []).length > 0 ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12 }}>
+          {comment.replies.map((reply) => renderCommentThread(reply, depth + 1))}
+        </div>
+      ) : null}
+    </div>
+  );
 
   if (loading) {
     return (
@@ -356,36 +503,7 @@ const ProjectDetailPage = () => {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxHeight: 260, overflowY: 'auto' }}>
-                {comments.length > 0 ? comments.map((comment) => (
-                  <div
-                    key={comment.commentId}
-                    style={{
-                      padding: '12px 14px',
-                      borderRadius: 16,
-                      background: '#f6f7fb',
-                      border: '1px solid rgba(26,26,46,0.08)',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                      <img
-                        src={comment.avatar || AVATAR}
-                        alt={comment.username || comment.name || 'commenter'}
-                        style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }}
-                      />
-                      <div>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: '#1a1a2e' }}>
-                          {comment.username || comment.name || 'CreativeVerse member'}
-                        </div>
-                        <div style={{ fontSize: 11, color: '#7a7a8e' }}>
-                          {comment.createdAt ? new Date(comment.createdAt).toLocaleString() : 'Just now'}
-                        </div>
-                      </div>
-                    </div>
-                    <p style={{ margin: 0, fontSize: 14, color: '#4b4b62', lineHeight: 1.5 }}>
-                      {comment.text}
-                    </p>
-                  </div>
-                )) : (
+                {comments.length > 0 ? comments.map((comment) => renderCommentThread(comment)) : (
                   <div style={{ fontSize: 14, color: '#7a7a8e' }}>
                     No comments yet. Be the first to respond.
                   </div>

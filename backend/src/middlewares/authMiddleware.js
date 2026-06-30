@@ -31,3 +31,28 @@ export const protect = asyncHandler(async (request, _response, next) => {
   request.user = user
   next()
 })
+
+export const optionalProtect = asyncHandler(async (request, _response, next) => {
+  const authorization = request.headers.authorization ?? ''
+  const [scheme, token] = authorization.split(' ')
+
+  if (scheme !== 'Bearer' || !token) {
+    next()
+    return
+  }
+
+  const decoded = verifyToken(token)
+
+  if (!decoded) {
+    next()
+    return
+  }
+
+  const user = await User.findById(decoded.sub).select('-password')
+
+  if (user) {
+    request.user = user
+  }
+
+  next()
+})

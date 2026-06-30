@@ -122,3 +122,49 @@ export async function updateContentEngagement(token, contentType, contentId, pay
     body: payload,
   })
 }
+
+export async function fetchPostEngagement(token, postId) {
+  return request(`/posts/${encodeURIComponent(postId)}/engagement`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+}
+
+export async function togglePostLike(token, postId) {
+  return request(`/posts/${encodeURIComponent(postId)}/like`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+}
+
+export async function togglePostSave(token, postId) {
+  return request(`/posts/${encodeURIComponent(postId)}/save`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+}
+
+export async function createPostComment(token, postId, payload) {
+  return request(`/posts/${encodeURIComponent(postId)}/comments`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: payload,
+  })
+}
+
+export async function createCommentReply(token, commentId, payload) {
+  return request(`/comments/${encodeURIComponent(commentId)}/replies`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: payload,
+  })
+}

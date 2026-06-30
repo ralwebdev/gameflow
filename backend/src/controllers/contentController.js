@@ -4,6 +4,8 @@ import crypto from 'node:crypto'
 import mongoose from 'mongoose'
 import Asset from '../models/Asset.js'
 import Game from '../models/Game.js'
+import PostComment from '../models/PostComment.js'
+import PostEngagement from '../models/PostEngagement.js'
 import Project from '../models/Project.js'
 import { seedAssets, seedGames } from '../data/seedData.js'
 import asyncHandler from '../middlewares/asyncHandler.js'
@@ -222,6 +224,20 @@ function safeAvatarUrl(avatar) {
   return avatar || ''
 }
 
+function normalizeProjectEngagementSummary(summary = {}, viewerState = {}, comments = []) {
+  return {
+    likesCount: Number(summary.likesCount || 0),
+    commentsCount: Number(summary.commentsCount || 0),
+    savesCount: Number(summary.savesCount || 0),
+    sharesCount: Number(summary.sharesCount || 0),
+    isLiked: Boolean(viewerState.isLiked),
+    isSaved: Boolean(viewerState.isSaved),
+    viewerHasLiked: Boolean(viewerState.isLiked),
+    viewerHasSaved: Boolean(viewerState.isSaved),
+    comments,
+  }
+}
+
 function normalizeEngagement(engagement = {}, viewerId = '') {
   const reactions = Array.isArray(engagement.reactions) ? engagement.reactions : []
   const savedBy = Array.isArray(engagement.savedBy) ? engagement.savedBy : []
@@ -253,7 +269,22 @@ function normalizeEngagement(engagement = {}, viewerId = '') {
   }
 }
 
-function buildProjectPayload(project, viewerId = '') {
+function formatProjectComment(comment, replies = []) {
+  return {
+    commentId: String(comment._id),
+    userId: String(comment.userId || ''),
+    username: comment.username || '',
+    name: comment.name || '',
+    avatar: safeAvatarUrl(comment.avatar),
+    text: comment.text || '',
+    parentCommentId: comment.parentCommentId ? String(comment.parentCommentId) : null,
+    createdAt: comment.createdAt,
+    updatedAt: comment.updatedAt,
+    replies,
+  }
+}
+
+function buildProjectPayload(project, engagement = {}) {
   return {
     contentType: 'project',
     contentId: String(project._id),
@@ -278,7 +309,7 @@ function buildProjectPayload(project, viewerId = '') {
     modelUrl: project.modelUrl,
     imageUrl: project.imageUrl,
     uploadedFiles: project.uploadedFiles,
-    engagement: normalizeEngagement(project.engagement, viewerId),
+    engagement,
     createdAt: project.createdAt,
     updatedAt: project.updatedAt,
   }
@@ -327,6 +358,124 @@ function buildAssetPayload(asset, index, viewerId = '') {
 
 function getViewerId(request) {
   return request.user?._id ? String(request.user._id) : ''
+}
+
+async function computeProjectEngagementMap(projectIds = [], viewerId = '') {
+  const normalizedIds = projectIds
+    .filter(Boolean)
+    .map((projectId) => new mongoose.Types.ObjectId(String(projectId)))
+
+  if (normalizedIds.length === 0) {
+    return new Map()
+  }
+
+  const [likesAgg, savesAgg, commentsAgg, viewerRows] = await Promise.all([
+    PostEngagement.aggregate([
+      { $match: { postId: { $in: normalizedIds }, liked: true } },
+      { $group: { _id: '$postId', count: { $sum: 1 } } },
+    ]),
+    PostEngagement.aggregate([
+      { $match: { postId: { $in: normalizedIds }, saved: true } },
+      { $group: { _id: '$postId', count: { $sum: 1 } } },
+    ]),
+    PostComment.aggregate([
+      { $match: { postId: { $in: normalizedIds } } },
+      { $group: { _id: '$postId', count: { $sum: 1 } } },
+    ]),
+    viewerId
+      ? PostEngagement.find({
+          postId: { $in: normalizedIds },
+          userId: viewerId,
+        })
+          .select('postId liked saved')
+          .lean()
+      : [],
+  ])
+
+  const likesMap = new Map(likesAgg.map((entry) => [String(entry._id), Number(entry.count || 0)]))
+  const savesMap = new Map(savesAgg.map((entry) => [String(entry._id), Number(entry.count || 0)]))
+  const commentsMap = new Map(commentsAgg.map((entry) => [String(entry._id), Number(entry.count || 0)]))
+  const viewerMap = new Map(
+    viewerRows.map((entry) => [
+      String(entry.postId),
+      {
+        isLiked: Boolean(entry.liked),
+        isSaved: Boolean(entry.saved),
+      },
+    ]),
+  )
+
+  const result = new Map()
+
+  for (const projectId of normalizedIds) {
+    const projectKey = String(projectId)
+    result.set(
+      projectKey,
+      normalizeProjectEngagementSummary(
+        {
+          likesCount: likesMap.get(projectKey) ?? 0,
+          commentsCount: commentsMap.get(projectKey) ?? 0,
+          savesCount: savesMap.get(projectKey) ?? 0,
+          sharesCount: 0,
+        },
+        viewerMap.get(projectKey) ?? {},
+        [],
+      ),
+    )
+  }
+
+  return result
+}
+
+async function buildProjectCommentsTree(postId) {
+  const comments = await PostComment.find({ postId }).sort({ createdAt: 1 }).lean()
+  const byParent = new Map()
+
+  for (const comment of comments) {
+    const parentKey = comment.parentCommentId ? String(comment.parentCommentId) : 'root'
+    const siblings = byParent.get(parentKey) ?? []
+    siblings.push(comment)
+    byParent.set(parentKey, siblings)
+  }
+
+  const buildBranch = (parentKey) =>
+    (byParent.get(parentKey) ?? []).map((comment) =>
+      formatProjectComment(comment, buildBranch(String(comment._id))),
+    )
+
+  return buildBranch('root')
+}
+
+async function getProjectEngagementPayload(postId, viewerId = '', options = {}) {
+  const includeComments = options.includeComments !== false
+  const [countsMap, comments] = await Promise.all([
+    computeProjectEngagementMap([postId], viewerId),
+    includeComments ? buildProjectCommentsTree(postId) : [],
+  ])
+
+  const summary = countsMap.get(String(postId)) ?? normalizeProjectEngagementSummary()
+
+  return {
+    ...summary,
+    sharesCount: Number(options.sharesCount ?? summary.sharesCount ?? 0),
+    comments,
+  }
+}
+
+async function enrichProjects(projects = [], viewerId = '', options = {}) {
+  const engagementMap = await computeProjectEngagementMap(
+    projects.map((project) => project._id),
+    viewerId,
+  )
+
+  return projects.map((project) => {
+    const engagement = engagementMap.get(String(project._id)) ?? normalizeProjectEngagementSummary()
+    return buildProjectPayload(project, {
+      ...engagement,
+      sharesCount: Number(project?.engagement?.sharesCount || 0),
+      comments: options.includeComments ? engagement.comments : [],
+    })
+  })
 }
 
 function getEngagementTarget(contentType) {
@@ -390,21 +539,9 @@ function ensureEngagement(target) {
   target.engagement.comments = Array.isArray(target.engagement.comments) ? target.engagement.comments : []
 }
 
-function toCommentPayload(user, text) {
-  return {
-    commentId: crypto.randomUUID(),
-    userId: user._id,
-    username: user.username,
-    name: user.name,
-    avatar: safeAvatarUrl(user.avatar),
-    text: String(text || '').trim(),
-    createdAt: new Date(),
-  }
-}
-
 function buildContentPayload(contentType, content, viewerId = '', index = 0) {
   if (contentType === 'project') {
-    return buildProjectPayload(content, viewerId)
+    return buildProjectPayload(content, normalizeEngagement(content.engagement, viewerId))
   }
 
   if (contentType === 'game') {
@@ -487,10 +624,12 @@ export const getContent = asyncHandler(async (request, response) => {
     Project.find(listQuery(!includeDraftsFlag)).sort({ createdAt: -1 }).lean(),
   ])
 
+  const enrichedProjects = await enrichProjects(projects, viewerId, { includeComments: false })
+
   const content = {
     games: games.map((game, index) => buildGamePayload(game, index, viewerId)),
     assets: assets.map((asset, index) => buildAssetPayload(asset, index, viewerId)),
-    projects: projects.map((project) => buildProjectPayload(project, viewerId)),
+    projects: enrichedProjects,
   }
   response.json(content)
 })
@@ -516,7 +655,7 @@ export const getPublishedProjects = asyncHandler(async (request, response) => {
   const projects = await Project.find(listQuery(!includeDrafts(request)))
     .sort({ displayOrder: 1, createdAt: -1 })
     .lean()
-  response.json(projects.map((project) => buildProjectPayload(project, viewerId)))
+  response.json(await enrichProjects(projects, viewerId, { includeComments: false }))
 })
 
 export const getProjectById = asyncHandler(async (request, response) => {
@@ -533,7 +672,12 @@ export const getProjectById = asyncHandler(async (request, response) => {
     throw createError(404, 'Project not found.')
   }
 
-  response.json({ project: buildProjectPayload(project, viewerId) })
+  const engagement = await getProjectEngagementPayload(project._id, viewerId, {
+    includeComments: true,
+    sharesCount: project?.engagement?.sharesCount || 0,
+  })
+
+  response.json({ project: buildProjectPayload(project, engagement) })
 })
 
 export const createProject = asyncHandler(async (request, response) => {
@@ -598,7 +742,10 @@ export const createProject = asyncHandler(async (request, response) => {
 
   response.status(201).json({
     message: 'Project draft created successfully.',
-    project: buildProjectPayload(project, getViewerId(request)),
+    project: buildProjectPayload(
+      project,
+      normalizeProjectEngagementSummary({ sharesCount: Number(project?.engagement?.sharesCount || 0) }),
+    ),
   })
 })
 
@@ -704,7 +851,10 @@ export const publishProject = asyncHandler(async (request, response) => {
 
   response.json({
     message: 'Project published successfully.',
-    project: buildProjectPayload(project, getViewerId(request)),
+    project: buildProjectPayload(
+      project,
+      normalizeProjectEngagementSummary({ sharesCount: Number(project?.engagement?.sharesCount || 0) }),
+    ),
   })
 })
 
@@ -762,7 +912,169 @@ export const updateProject = asyncHandler(async (request, response) => {
 
   response.json({
     message: 'Project updated successfully.',
-    project: buildProjectPayload(project, getViewerId(request)),
+    project: buildProjectPayload(
+      project,
+      normalizeProjectEngagementSummary({ sharesCount: Number(project?.engagement?.sharesCount || 0) }),
+    ),
+  })
+})
+
+export const getPostEngagement = asyncHandler(async (request, response) => {
+  const { postId } = request.params
+  const viewerId = getViewerId(request)
+  const project = await loadEngagementTarget('project', postId)
+  const engagement = await getProjectEngagementPayload(project._id, viewerId, {
+    includeComments: true,
+    sharesCount: project?.engagement?.sharesCount || 0,
+  })
+
+  response.json({
+    postId: String(project._id),
+    engagement,
+  })
+})
+
+export const togglePostLike = asyncHandler(async (request, response) => {
+  const { postId } = request.params
+  const viewerId = getViewerId(request)
+  const project = await loadEngagementTarget('project', postId)
+
+  const record = await PostEngagement.findOneAndUpdate(
+    {
+      postId: project._id,
+      userId: request.user._id,
+    },
+    [
+      {
+        $set: {
+          liked: { $not: '$liked' },
+          saved: { $ifNull: ['$saved', false] },
+        },
+      },
+    ],
+    {
+      upsert: true,
+      returnDocument: 'after',
+      updatePipeline: true,
+    },
+  )
+
+  const engagement = await getProjectEngagementPayload(project._id, viewerId, {
+    includeComments: false,
+    sharesCount: project?.engagement?.sharesCount || 0,
+  })
+
+  response.json({
+    message: record.liked ? 'Post liked.' : 'Post unliked.',
+    postId: String(project._id),
+    engagement,
+  })
+})
+
+export const togglePostSave = asyncHandler(async (request, response) => {
+  const { postId } = request.params
+  const viewerId = getViewerId(request)
+  const project = await loadEngagementTarget('project', postId)
+
+  const record = await PostEngagement.findOneAndUpdate(
+    {
+      postId: project._id,
+      userId: request.user._id,
+    },
+    [
+      {
+        $set: {
+          liked: { $ifNull: ['$liked', false] },
+          saved: { $not: '$saved' },
+        },
+      },
+    ],
+    {
+      upsert: true,
+      returnDocument: 'after',
+      updatePipeline: true,
+    },
+  )
+
+  const engagement = await getProjectEngagementPayload(project._id, viewerId, {
+    includeComments: false,
+    sharesCount: project?.engagement?.sharesCount || 0,
+  })
+
+  response.json({
+    message: record.saved ? 'Post saved.' : 'Post unsaved.',
+    postId: String(project._id),
+    engagement,
+  })
+})
+
+export const createPostComment = asyncHandler(async (request, response) => {
+  const { postId } = request.params
+  const viewerId = getViewerId(request)
+  const text = String(request.body?.text || request.body?.commentText || '').trim()
+
+  if (!text) {
+    throw createError(400, 'Comment text is required.')
+  }
+
+  const project = await loadEngagementTarget('project', postId)
+
+  await PostComment.create({
+    postId: project._id,
+    userId: request.user._id,
+    username: request.user.username,
+    name: request.user.name,
+    avatar: safeAvatarUrl(request.user.avatar),
+    text,
+  })
+
+  const engagement = await getProjectEngagementPayload(project._id, viewerId, {
+    includeComments: true,
+    sharesCount: project?.engagement?.sharesCount || 0,
+  })
+
+  response.status(201).json({
+    message: 'Comment added successfully.',
+    postId: String(project._id),
+    engagement,
+  })
+})
+
+export const createCommentReply = asyncHandler(async (request, response) => {
+  const { commentId } = request.params
+  const text = String(request.body?.text || '').trim()
+  const viewerId = getViewerId(request)
+
+  if (!text) {
+    throw createError(400, 'Reply text is required.')
+  }
+
+  const parentComment = await PostComment.findById(commentId)
+
+  if (!parentComment) {
+    throw createError(404, 'Comment not found.')
+  }
+
+  await PostComment.create({
+    postId: parentComment.postId,
+    userId: request.user._id,
+    parentCommentId: parentComment._id,
+    username: request.user.username,
+    name: request.user.name,
+    avatar: safeAvatarUrl(request.user.avatar),
+    text,
+  })
+
+  const project = await Project.findById(parentComment.postId).lean()
+  const engagement = await getProjectEngagementPayload(parentComment.postId, viewerId, {
+    includeComments: true,
+    sharesCount: project?.engagement?.sharesCount || 0,
+  })
+
+  response.status(201).json({
+    message: 'Reply added successfully.',
+    postId: String(parentComment.postId),
+    engagement,
   })
 })
 
@@ -782,6 +1094,10 @@ export const updateContentEngagement = asyncHandler(async (request, response) =>
 
   const target = await loadEngagementTarget(contentType, contentId)
   ensureEngagement(target)
+
+  if (contentType === 'project' && action !== 'share') {
+    throw createError(400, 'Use the post engagement routes for project likes, saves, and comments.')
+  }
 
   if (action === 'react') {
     const existingIndex = target.engagement.reactions.findIndex(
@@ -828,7 +1144,15 @@ export const updateContentEngagement = asyncHandler(async (request, response) =>
       throw createError(400, 'Comment text is required.')
     }
 
-    target.engagement.comments.push(toCommentPayload(request.user, commentText))
+    target.engagement.comments.push({
+      commentId: crypto.randomUUID(),
+      userId: request.user._id,
+      username: request.user.username,
+      name: request.user.name,
+      avatar: safeAvatarUrl(request.user.avatar),
+      text: commentText,
+      createdAt: new Date(),
+    })
     target.engagement.commentsCount += 1
   }
 
@@ -838,9 +1162,20 @@ export const updateContentEngagement = asyncHandler(async (request, response) =>
 
   await target.save()
 
+  const content =
+    contentType === 'project'
+      ? buildProjectPayload(
+          target.toObject(),
+          await getProjectEngagementPayload(target._id, viewerId, {
+            includeComments: true,
+            sharesCount: target.engagement.sharesCount,
+          }),
+        )
+      : buildContentPayload(contentType, target.toObject(), viewerId)
+
   response.json({
     message: 'Engagement updated successfully.',
-    content: buildContentPayload(contentType, target.toObject(), viewerId),
+    content,
   })
 })
 
@@ -865,6 +1200,10 @@ export const deleteProject = asyncHandler(async (request, response) => {
     }
   }
 
+  await Promise.all([
+    PostEngagement.deleteMany({ postId: projectId }),
+    PostComment.deleteMany({ postId: projectId }),
+  ])
   await Project.deleteOne({ _id: projectId })
 
   response.json({

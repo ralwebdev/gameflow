@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { fetchContent, updateContentEngagement, updateProject, deleteProject, uploadProjectFile } from '../../lib/content';
+import { fetchContent, togglePostLike, updateProject, deleteProject, uploadProjectFile } from '../../lib/content';
 import GuestBanner from '../../components/layout/GuestBanner';
 import GuestToast from '../../components/layout/GuestToast';
 import {
@@ -9,10 +9,11 @@ import {
   ChevronDownIcon, CubeIcon, AfterEffectsIcon, GameIcon, ZBrushIcon
 } from '../../components/icons/Icons';
 
-const SettingsIcon = ({ size = 16 }) => (
+const LogoutIcon = ({ size = 16 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="3" />
-    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <polyline points="16 17 21 12 16 7" />
+    <line x1="21" y1="12" x2="9" y2="12" />
   </svg>
 );
 
@@ -31,15 +32,6 @@ const TrashIcon = ({ size = 14 }) => (
     <line x1="14" y1="11" x2="14" y2="17" />
   </svg>
 );
-
-const PROJECTS = [
-  { id: 1, category: '3D Render', image: 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/1bd8db8c4-7446-4905-bbe6-106a3bce5dc2.png', likes: '8.4k', tall: true },
-  { id: 2, category: 'FX', image: 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/1a26c70d3-6e59-4426-897a-6546a2e98a7e.png', likes: '5.7k', tall: false },
-  { id: 3, category: 'Environment', image: 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/18b6190b4-15eb-4568-9328-53c6d187c8c3.png', likes: '3.1k', tall: false },
-  { id: 4, category: 'VFX', image: 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/12de9432e-ccf4-418f-a563-5181abb44ff3.png', likes: '19k', tall: true },
-  { id: 5, category: 'Concept', image: 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/18be33d7f-6129-4806-a387-7568fee9b096.png', likes: '12k', tall: false },
-  { id: 6, category: 'Sculpt', image: 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/1097bcf9c-55f8-4aa3-8544-7e63de8dd465.png', likes: '6.2k', tall: false },
-];
 
 const AVATAR = 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/19f781f2a-1e76-4c62-8f73-55c5248d45ab.png';
 const BANNER = 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/1097bcf9c-55f8-4aa3-8544-7e63de8dd465.png';
@@ -80,6 +72,7 @@ const ProfilePage = () => {
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [toast, setToast] = useState(null);
   const [toastMsg, setToastMsg] = useState(null);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editEmail, setEditEmail] = useState('');
   const [editUsername, setEditUsername] = useState('');
@@ -372,10 +365,11 @@ const ProfilePage = () => {
     }
 
     try {
-      const result = await updateContentEngagement(token, 'project', proj.id || proj._id, {
-        action: 'react',
+      const result = await togglePostLike(token, proj.id || proj._id);
+      syncContentItem({
+        id: proj.id || proj._id,
+        engagement: result.engagement,
       });
-      syncContentItem(result.content);
       setToastMsg('Reaction updated successfully!');
       setTimeout(() => setToastMsg(null), 2000);
     } catch (error) {
@@ -475,7 +469,7 @@ const ProfilePage = () => {
         className="scrollbar-hide"
         style={{
           flex: 1,
-          overflowY: 'auto',
+          overflowY: (showLogoutConfirm || deletingProject || isEditing || editingProject) ? 'hidden' : 'auto',
           paddingBottom: 110,
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
@@ -535,10 +529,7 @@ const ProfilePage = () => {
               </button>
               <button
                 onClick={() => {
-                  if (window.confirm('Are you sure you want to log out?')) {
-                    logout();
-                    navigate('/signin');
-                  }
+                  setShowLogoutConfirm(true);
                 }}
                 style={{
                   width: 36,
@@ -555,7 +546,7 @@ const ProfilePage = () => {
                   cursor: 'pointer',
                 }}
               >
-                <SettingsIcon size={16} />
+                <LogoutIcon size={16} />
               </button>
             </div>
           </div>
@@ -575,23 +566,6 @@ const ProfilePage = () => {
                 boxShadow: '0 4px 16px rgba(255, 122, 89, 0.25)',
               }}
             />
-            <div
-              style={{
-                position: 'absolute',
-                bottom: 0,
-                right: 0,
-                width: 22,
-                height: 22,
-                borderRadius: '50%',
-                background: '#FF7A59',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: '2px solid #0B0D12',
-              }}
-            >
-              <VerifiedIcon />
-            </div>
           </div>
 
           <h1 style={{ fontSize: 20, fontWeight: 800, margin: '0 0 2px', letterSpacing: -0.4 }}>{displayName}</h1>
@@ -1660,6 +1634,102 @@ const ProfilePage = () => {
                 }}
               >
                 {isDeletingProj ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showLogoutConfirm && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'rgba(11, 13, 18, 0.9)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            zIndex: 1050,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 20,
+          }}
+        >
+          <div
+            style={{
+              width: '100%',
+              maxWidth: 340,
+              background: '#121620',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: 20,
+              padding: '24px 20px',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 16,
+              alignItems: 'center',
+              textAlign: 'center',
+            }}
+          >
+            <div
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: '50%',
+                background: 'rgba(255, 122, 89, 0.1)',
+                border: '1px solid rgba(255, 122, 89, 0.2)',
+                color: '#FF7A59',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <LogoutIcon size={24} />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <h3 style={{ fontSize: 18, fontWeight: 800, margin: 0, color: '#FFFFFF' }}>Log Out</h3>
+              <p style={{ fontSize: 13, color: '#B8C0CC', margin: 0, lineHeight: 1.5 }}>
+                Are you sure you want to log out of your account?
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', width: '100%', gap: 10, marginTop: 4 }}>
+              <button
+                onClick={() => setShowLogoutConfirm(false)}
+                style={{
+                  flex: 1,
+                  height: 40,
+                  borderRadius: 10,
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  color: '#FFF',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowLogoutConfirm(false);
+                  logout();
+                  navigate('/signin');
+                }}
+                style={{
+                  flex: 1,
+                  height: 40,
+                  borderRadius: 10,
+                  background: '#FF7A59',
+                  border: 'none',
+                  color: '#FFF',
+                  fontSize: 13,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                Log Out
               </button>
             </div>
           </div>
