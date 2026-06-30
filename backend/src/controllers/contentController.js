@@ -222,9 +222,43 @@ function safeAvatarUrl(avatar) {
   return avatar || ''
 }
 
-function buildProjectPayload(project) {
+function normalizeEngagement(engagement = {}, viewerId = '') {
+  const reactions = Array.isArray(engagement.reactions) ? engagement.reactions : []
+  const savedBy = Array.isArray(engagement.savedBy) ? engagement.savedBy : []
+  const comments = Array.isArray(engagement.comments) ? engagement.comments : []
+  const viewerKey = String(viewerId || '')
+
   return {
+    likesCount: Number(engagement.likesCount || 0),
+    commentsCount: Number(engagement.commentsCount || 0),
+    savesCount: Number(engagement.savesCount || 0),
+    sharesCount: Number(engagement.sharesCount || 0),
+    viewerHasLiked: viewerKey
+      ? reactions.some((reaction) => String(reaction.userId) === viewerKey)
+      : false,
+    viewerHasSaved: viewerKey
+      ? savedBy.some((entry) => String(entry.userId) === viewerKey)
+      : false,
+    comments: comments
+      .map((comment) => ({
+        commentId: String(comment.commentId || ''),
+        userId: String(comment.userId || ''),
+        username: comment.username || '',
+        name: comment.name || '',
+        avatar: safeAvatarUrl(comment.avatar),
+        text: comment.text || '',
+        createdAt: comment.createdAt,
+      }))
+      .filter((comment) => comment.commentId && comment.text),
+  }
+}
+
+function buildProjectPayload(project, viewerId = '') {
+  return {
+    contentType: 'project',
+    contentId: String(project._id),
     id: String(project._id),
+    feedKey: `project:${String(project._id)}`,
     ownerId: String(project.ownerId),
     ownerUsername: project.ownerUsername,
     ownerName: project.ownerName,
@@ -244,9 +278,140 @@ function buildProjectPayload(project) {
     modelUrl: project.modelUrl,
     imageUrl: project.imageUrl,
     uploadedFiles: project.uploadedFiles,
+    engagement: normalizeEngagement(project.engagement, viewerId),
     createdAt: project.createdAt,
     updatedAt: project.updatedAt,
   }
+}
+
+function buildGamePayload(game, index, viewerId = '') {
+  return {
+    contentType: 'game',
+    contentId: String(game._id),
+    id: String(game._id),
+    feedKey: `game:${game.slug ?? index}`,
+    title: game.title,
+    slug: game.slug,
+    description: game.description,
+    gameUrl: game.gameUrl,
+    loadingScreenUrl: game.loadingScreenUrl,
+    mode: game.mode,
+    aspectRatio: game.aspectRatio,
+    isPublished: game.isPublished,
+    displayOrder: game.displayOrder,
+    engagement: normalizeEngagement(game.engagement, viewerId),
+    createdAt: game.createdAt,
+    updatedAt: game.updatedAt,
+  }
+}
+
+function buildAssetPayload(asset, index, viewerId = '') {
+  return {
+    contentType: 'asset',
+    contentId: String(asset._id),
+    id: String(asset._id),
+    feedKey: `asset:${asset.slug ?? index}`,
+    title: asset.title,
+    slug: asset.slug,
+    description: asset.description,
+    modelUrl: asset.modelUrl,
+    background: asset.background,
+    mode: asset.mode,
+    isPublished: asset.isPublished,
+    displayOrder: asset.displayOrder,
+    engagement: normalizeEngagement(asset.engagement, viewerId),
+    createdAt: asset.createdAt,
+    updatedAt: asset.updatedAt,
+  }
+}
+
+function getViewerId(request) {
+  return request.user?._id ? String(request.user._id) : ''
+}
+
+function getEngagementTarget(contentType) {
+  if (contentType === 'project') {
+    return Project
+  }
+
+  if (contentType === 'game') {
+    return Game
+  }
+
+  if (contentType === 'asset') {
+    return Asset
+  }
+
+  return null
+}
+
+function resolveContentQuery(contentType, contentId) {
+  if (contentType === 'project') {
+    return mongoose.Types.ObjectId.isValid(contentId)
+      ? { $or: [{ _id: contentId }, { slug: String(contentId).toLowerCase() }] }
+      : { slug: String(contentId).toLowerCase() }
+  }
+
+  if (mongoose.Types.ObjectId.isValid(contentId)) {
+    return { _id: contentId }
+  }
+
+  return { slug: String(contentId).toLowerCase() }
+}
+
+async function loadEngagementTarget(contentType, contentId) {
+  const Model = getEngagementTarget(contentType)
+
+  if (!Model) {
+    throw createError(400, 'Invalid content type.')
+  }
+
+  const query = resolveContentQuery(contentType, contentId)
+  const target = await Model.findOne(query)
+
+  if (!target) {
+    throw createError(404, 'Content item not found.')
+  }
+
+  return target
+}
+
+function ensureEngagement(target) {
+  if (!target.engagement) {
+    target.engagement = {}
+  }
+
+  target.engagement.likesCount = Number(target.engagement.likesCount || 0)
+  target.engagement.commentsCount = Number(target.engagement.commentsCount || 0)
+  target.engagement.savesCount = Number(target.engagement.savesCount || 0)
+  target.engagement.sharesCount = Number(target.engagement.sharesCount || 0)
+  target.engagement.reactions = Array.isArray(target.engagement.reactions) ? target.engagement.reactions : []
+  target.engagement.savedBy = Array.isArray(target.engagement.savedBy) ? target.engagement.savedBy : []
+  target.engagement.comments = Array.isArray(target.engagement.comments) ? target.engagement.comments : []
+}
+
+function toCommentPayload(user, text) {
+  return {
+    commentId: crypto.randomUUID(),
+    userId: user._id,
+    username: user.username,
+    name: user.name,
+    avatar: safeAvatarUrl(user.avatar),
+    text: String(text || '').trim(),
+    createdAt: new Date(),
+  }
+}
+
+function buildContentPayload(contentType, content, viewerId = '', index = 0) {
+  if (contentType === 'project') {
+    return buildProjectPayload(content, viewerId)
+  }
+
+  if (contentType === 'game') {
+    return buildGamePayload(content, index, viewerId)
+  }
+
+  return buildAssetPayload(content, index, viewerId)
 }
 
 async function storeProjectFiles(projectSlug, files = []) {
@@ -315,39 +480,48 @@ export function getHealth(_request, response) {
 
 export const getContent = asyncHandler(async (request, response) => {
   const includeDraftsFlag = includeDrafts(request)
+  const viewerId = getViewerId(request)
   const [games, assets, projects] = await Promise.all([
     Game.find(listQuery(!includeDraftsFlag)).sort({ displayOrder: 1, createdAt: 1 }).lean(),
     Asset.find(listQuery(!includeDraftsFlag)).sort({ displayOrder: 1, createdAt: 1 }).lean(),
     Project.find(listQuery(!includeDraftsFlag)).sort({ createdAt: -1 }).lean(),
   ])
 
-  const content = { games, assets, projects: projects.map(buildProjectPayload) }
+  const content = {
+    games: games.map((game, index) => buildGamePayload(game, index, viewerId)),
+    assets: assets.map((asset, index) => buildAssetPayload(asset, index, viewerId)),
+    projects: projects.map((project) => buildProjectPayload(project, viewerId)),
+  }
   response.json(content)
 })
 
 export const getPublishedGames = asyncHandler(async (request, response) => {
+  const viewerId = getViewerId(request)
   const games = await Game.find(listQuery(!includeDrafts(request)))
     .sort({ displayOrder: 1, createdAt: 1 })
     .lean()
-  response.json(games)
+  response.json(games.map((game, index) => buildGamePayload(game, index, viewerId)))
 })
 
 export const getPublishedAssets = asyncHandler(async (request, response) => {
+  const viewerId = getViewerId(request)
   const assets = await Asset.find(listQuery(!includeDrafts(request)))
     .sort({ displayOrder: 1, createdAt: 1 })
     .lean()
-  response.json(assets)
+  response.json(assets.map((asset, index) => buildAssetPayload(asset, index, viewerId)))
 })
 
 export const getPublishedProjects = asyncHandler(async (request, response) => {
+  const viewerId = getViewerId(request)
   const projects = await Project.find(listQuery(!includeDrafts(request)))
     .sort({ displayOrder: 1, createdAt: -1 })
     .lean()
-  response.json(projects.map(buildProjectPayload))
+  response.json(projects.map((project) => buildProjectPayload(project, viewerId)))
 })
 
 export const getProjectById = asyncHandler(async (request, response) => {
   const { projectId } = request.params
+  const viewerId = getViewerId(request)
 
   const query = mongoose.Types.ObjectId.isValid(projectId)
     ? { $or: [{ _id: projectId }, { slug: String(projectId).toLowerCase() }] }
@@ -359,7 +533,7 @@ export const getProjectById = asyncHandler(async (request, response) => {
     throw createError(404, 'Project not found.')
   }
 
-  response.json({ project: buildProjectPayload(project) })
+  response.json({ project: buildProjectPayload(project, viewerId) })
 })
 
 export const createProject = asyncHandler(async (request, response) => {
@@ -424,7 +598,7 @@ export const createProject = asyncHandler(async (request, response) => {
 
   response.status(201).json({
     message: 'Project draft created successfully.',
-    project: buildProjectPayload(project),
+    project: buildProjectPayload(project, getViewerId(request)),
   })
 })
 
@@ -462,6 +636,19 @@ export const uploadProjectFile = asyncHandler(async (request, response) => {
   ].sort((a, b) => a.relativePath.localeCompare(b.relativePath))
 
   project.uploadedFiles = nextFiles
+
+  const mainFile = pickMainFile(project.uploadedFiles, project.type)
+  if (mainFile) {
+    const coverFile = project.uploadedFiles.find((file) => file.relativePath.toLowerCase().startsWith('cover/'))
+      ?? project.uploadedFiles.find((file) => ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.avif'].some((ext) => file.relativePath.toLowerCase().endsWith(ext)))
+      ?? null
+
+    project.previewUrl = coverFile?.url ?? mainFile.url
+    project.gameUrl = project.type === 'game' ? mainFile.url : ''
+    project.modelUrl = project.type === '3d' ? mainFile.url : ''
+    project.imageUrl = project.type === '2d' ? mainFile.url : ''
+  }
+
   await project.save()
 
   response.status(201).json({
@@ -517,7 +704,171 @@ export const publishProject = asyncHandler(async (request, response) => {
 
   response.json({
     message: 'Project published successfully.',
-    project: buildProjectPayload(project),
+    project: buildProjectPayload(project, getViewerId(request)),
+  })
+})
+
+export const updateProject = asyncHandler(async (request, response) => {
+  const { projectId } = request.params
+  const { title, category, description, tags, software, visibility, mode, type } = request.body
+
+  const project = await Project.findById(projectId)
+
+  if (!project) {
+    throw createError(404, 'Project not found.')
+  }
+
+  if (String(project.ownerId) !== String(request.user._id)) {
+    throw createError(403, 'You cannot modify this project.')
+  }
+
+  if (title !== undefined) project.title = String(title).trim()
+  if (category !== undefined) project.category = String(category).trim()
+  if (description !== undefined) project.description = String(description).trim()
+  if (tags !== undefined) project.tags = normalizeList(tags)
+  if (software !== undefined) project.software = normalizeList(software)
+  if (visibility !== undefined) {
+    if (!['public', 'private'].includes(visibility)) {
+      throw createError(400, 'Invalid visibility value.')
+    }
+    project.visibility = visibility
+  }
+  if (mode !== undefined) {
+    if (!['portrait', 'landscape'].includes(mode)) {
+      throw createError(400, 'Invalid mode value.')
+    }
+    project.mode = mode
+  }
+  if (type !== undefined) {
+    if (!['game', '3d', '2d'].includes(type)) {
+      throw createError(400, 'Invalid type value.')
+    }
+    project.type = type
+  }
+
+  const mainFile = pickMainFile(project.uploadedFiles, project.type)
+  if (mainFile) {
+    const coverFile = project.uploadedFiles.find((file) => file.relativePath.toLowerCase().startsWith('cover/'))
+      ?? project.uploadedFiles.find((file) => ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.avif'].some((ext) => file.relativePath.toLowerCase().endsWith(ext)))
+      ?? null
+
+    project.previewUrl = coverFile?.url ?? mainFile.url
+    project.gameUrl = project.type === 'game' ? mainFile.url : ''
+    project.modelUrl = project.type === '3d' ? mainFile.url : ''
+    project.imageUrl = project.type === '2d' ? mainFile.url : ''
+  }
+
+  await project.save()
+
+  response.json({
+    message: 'Project updated successfully.',
+    project: buildProjectPayload(project, getViewerId(request)),
+  })
+})
+
+export const updateContentEngagement = asyncHandler(async (request, response) => {
+  const { contentType, contentId } = request.params
+  const action = String(request.body?.action || '').trim()
+  const commentText = String(request.body?.commentText || '').trim()
+  const viewerId = getViewerId(request)
+
+  if (!request.user) {
+    throw createError(401, 'Please sign in to interact with posts.')
+  }
+
+  if (!['react', 'comment', 'save', 'share'].includes(action)) {
+    throw createError(400, 'Invalid engagement action.')
+  }
+
+  const target = await loadEngagementTarget(contentType, contentId)
+  ensureEngagement(target)
+
+  if (action === 'react') {
+    const existingIndex = target.engagement.reactions.findIndex(
+      (reaction) => String(reaction.userId) === viewerId,
+    )
+
+    if (existingIndex >= 0) {
+      target.engagement.reactions.splice(existingIndex, 1)
+      target.engagement.likesCount = Math.max(0, target.engagement.likesCount - 1)
+    } else {
+      target.engagement.reactions.push({
+        userId: request.user._id,
+        username: request.user.username,
+        name: request.user.name,
+        avatar: safeAvatarUrl(request.user.avatar),
+        type: 'like',
+        createdAt: new Date(),
+      })
+      target.engagement.likesCount += 1
+    }
+  }
+
+  if (action === 'save') {
+    const existingIndex = target.engagement.savedBy.findIndex(
+      (entry) => String(entry.userId) === viewerId,
+    )
+
+    if (existingIndex >= 0) {
+      target.engagement.savedBy.splice(existingIndex, 1)
+      target.engagement.savesCount = Math.max(0, target.engagement.savesCount - 1)
+    } else {
+      target.engagement.savedBy.push({
+        userId: request.user._id,
+        username: request.user.username,
+        name: request.user.name,
+        avatar: safeAvatarUrl(request.user.avatar),
+      })
+      target.engagement.savesCount += 1
+    }
+  }
+
+  if (action === 'comment') {
+    if (!commentText) {
+      throw createError(400, 'Comment text is required.')
+    }
+
+    target.engagement.comments.push(toCommentPayload(request.user, commentText))
+    target.engagement.commentsCount += 1
+  }
+
+  if (action === 'share') {
+    target.engagement.sharesCount += 1
+  }
+
+  await target.save()
+
+  response.json({
+    message: 'Engagement updated successfully.',
+    content: buildContentPayload(contentType, target.toObject(), viewerId),
+  })
+})
+
+export const deleteProject = asyncHandler(async (request, response) => {
+  const { projectId } = request.params
+  const project = await Project.findById(projectId)
+
+  if (!project) {
+    throw createError(404, 'Project not found.')
+  }
+
+  if (String(project.ownerId) !== String(request.user._id)) {
+    throw createError(403, 'You cannot delete this project.')
+  }
+
+  if (project.slug) {
+    const projectRoot = getProjectRoot(project.slug)
+    try {
+      await fs.rm(projectRoot, { recursive: true, force: true })
+    } catch (err) {
+      console.error('Failed to delete project directory:', err)
+    }
+  }
+
+  await Project.deleteOne({ _id: projectId })
+
+  response.json({
+    message: 'Project deleted successfully.',
   })
 })
 

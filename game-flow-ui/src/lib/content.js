@@ -31,12 +31,24 @@ async function request(path, options = {}) {
   return data
 }
 
-export async function fetchContent() {
-  return request('/content')
+export async function fetchContent(token = '', options = {}) {
+  return request('/content', {
+    ...options,
+    headers: {
+      ...(options.headers ?? {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  })
 }
 
-export async function fetchProject(projectId) {
-  return request(`/projects/${encodeURIComponent(projectId)}`)
+export async function fetchProject(projectId, token = '', options = {}) {
+  return request(`/projects/${encodeURIComponent(projectId)}`, {
+    ...options,
+    headers: {
+      ...(options.headers ?? {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  })
 }
 
 export async function createProject(token, payload) {
@@ -79,5 +91,34 @@ export async function publishProject(token, projectId) {
     headers: {
       Authorization: `Bearer ${token}`,
     },
+  })
+}
+
+export async function updateProject(token, projectId, payload) {
+  return request(`/projects/${encodeURIComponent(projectId)}`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: payload,
+  })
+}
+
+export async function deleteProject(token, projectId) {
+  return request(`/projects/${encodeURIComponent(projectId)}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+}
+
+export async function updateContentEngagement(token, contentType, contentId, payload) {
+  return request(`/content/${encodeURIComponent(contentType)}/${encodeURIComponent(contentId)}/engagement`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: payload,
   })
 }

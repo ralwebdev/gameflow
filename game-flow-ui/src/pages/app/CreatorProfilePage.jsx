@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { fetchContent } from '../../lib/content';
 import GuestBanner from '../../components/layout/GuestBanner';
 import GuestToast from '../../components/layout/GuestToast';
 import {
@@ -28,17 +29,19 @@ const PROJECTS = [
 
 const AVATAR = 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/19f781f2a-1e76-4c62-8f73-55c5248d45ab.png';
 const BANNER = 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/1097bcf9c-55f8-4aa3-8544-7e63de8dd465.png';
+const DEFAULT_COVER = BANNER;
 
 const CreatorProfilePage = () => {
   const navigate = useNavigate();
   const { creatorId } = useParams();
-  const { isGuest } = useAuth();
+  const { isGuest, token } = useAuth();
   
   const [activeTab, setActiveTab] = useState('Projects');
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
   const [toast, setToast] = useState(null);
   const [likedMap, setLikedMap] = useState({});
+  const [contentFeed, setContentFeed] = useState({ projects: [], games: [], assets: [] });
 
   const handleGuestAction = (actionName) => {
     setToast({ action: actionName });
@@ -49,6 +52,37 @@ const CreatorProfilePage = () => {
     if (isGuest) { handleGuestAction('Like projects'); return; }
     setLikedMap(prev => ({ ...prev, [id]: !prev[id] }));
   };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadContent() {
+      try {
+        const data = await fetchContent(token);
+        if (!isMounted) {
+          return;
+        }
+
+        setContentFeed({
+          projects: Array.isArray(data?.projects) ? data.projects : [],
+          games: Array.isArray(data?.games) ? data.games : [],
+          assets: Array.isArray(data?.assets) ? data.assets : [],
+        });
+      } catch {
+        if (isMounted) {
+          setContentFeed({ projects: [], games: [], assets: [] });
+        }
+      }
+    }
+
+    if (!isGuest) {
+      loadContent();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isGuest, token]);
 
   const handleFollow = () => {
     if (isGuest) { handleGuestAction('follow creators'); return; }
@@ -67,6 +101,23 @@ const CreatorProfilePage = () => {
 
   const visibleSkills = SKILLS.slice(0, 3);
   const remainingSkillsCount = SKILLS.length - 3;
+  const savedItems = useMemo(() => {
+    const collect = (items, kind) =>
+      items
+        .filter((item) => item?.engagement?.viewerHasSaved)
+        .map((item) => ({
+          ...item,
+          kind,
+          thumbnail: item.previewUrl || item.imageUrl || item.loadingScreenUrl || item.modelUrl || DEFAULT_COVER,
+          title: item.title || item.projectTitle || 'Untitled post',
+        }));
+
+    return [
+      ...collect(contentFeed.projects, 'Project'),
+      ...collect(contentFeed.games, 'Game'),
+      ...collect(contentFeed.assets, '3D Asset'),
+    ];
+  }, [contentFeed]);
 
   return (
     <div
@@ -537,9 +588,71 @@ const CreatorProfilePage = () => {
           )}
 
           {activeTab === 'Saved' && (
-            <div style={{ textAlign: 'center', padding: '40px 20px', color: '#B8C0CC', fontSize: 13 }}>
-              Saved showcases will appear here.
-            </div>
+            <>
+              {savedItems.length > 0 ? (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  {savedItems.map((item, index) => {
+                    const itemId = item.id ?? item._id ?? `${item.kind}-${index}`;
+                    const canOpen = item.kind === 'Project';
+
+                    return (
+                      <div
+                        key={itemId}
+                        onClick={() => {
+                          if (canOpen) {
+                            navigate(`/app/project/${item.id || item._id}`);
+                          }
+                        }}
+                        style={{
+                          position: 'relative',
+                          borderRadius: 16,
+                          overflow: 'hidden',
+                          aspectRatio: '1 / 1.15',
+                          cursor: canOpen ? 'pointer' : 'default',
+                          background: '#121620',
+                          border: '1px solid rgba(255,255,255,0.04)',
+                        }}
+                      >
+                        <img src={item.thumbnail} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <div
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            background: 'linear-gradient(0deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.15) 55%, rgba(0,0,0,0.1) 100%)',
+                            pointerEvents: 'none',
+                          }}
+                        />
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: 10,
+                            left: 10,
+                            background: 'rgba(255,255,255,0.1)',
+                            backdropFilter: 'blur(8px)',
+                            WebkitBackdropFilter: 'blur(8px)',
+                            padding: '3px 8px',
+                            borderRadius: 100,
+                            fontSize: 9,
+                            fontWeight: 700,
+                            color: '#FFFFFF',
+                            border: '1px solid rgba(255,255,255,0.06)',
+                          }}
+                        >
+                          {item.kind}
+                        </div>
+                        <div style={{ position: 'absolute', bottom: 10, left: 10, right: 10, zIndex: 2 }}>
+                          <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 4 }}>{item.title}</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '40px 20px', color: '#B8C0CC', fontSize: 13 }}>
+                  Saved showcases will appear here.
+                </div>
+              )}
+            </>
           )}
 
           {['Models', 'Games', 'About'].includes(activeTab) && (

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { VerifiedIcon } from '../../components/icons/Icons';
+import { useAuth } from '../../context/AuthContext';
 
 // ─── Mock Data ──────────────────────────────────────────────────────────────
 const CATEGORIES = ['All', '3D', 'Animation', 'VFX', 'Games', 'Concept'];
@@ -19,6 +20,7 @@ const TRENDING_PROJECTS = [
 
 const ExplorePage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [followingMap, setFollowingMap] = useState({});
@@ -29,7 +31,11 @@ const ExplorePage = () => {
   };
 
   const handleCreatorClick = (creatorName) => {
-    navigate(`/app/creator/${creatorName}`);
+    if (user && creatorName === user.username) {
+      navigate('/app/profile');
+    } else {
+      navigate(`/app/creator/${creatorName}`);
+    }
   };
 
   // Filters

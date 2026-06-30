@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import engagementSchema from './engagementSchema.js'
 
 const uploadedFileSchema = new mongoose.Schema(
   {
@@ -126,6 +127,10 @@ const projectSchema = new mongoose.Schema(
     uploadedFiles: {
       type: [uploadedFileSchema],
       default: [],
+    },
+    engagement: {
+      type: engagementSchema,
+      default: () => ({}),
     },
     displayOrder: {
       type: Number,

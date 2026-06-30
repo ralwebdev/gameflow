@@ -9,6 +9,9 @@ import {
   getPublishedProjects,
   publishProject,
   uploadProjectFile,
+  updateProject,
+  updateContentEngagement,
+  deleteProject,
 } from '../controllers/contentController.js'
 import { protect } from '../middlewares/authMiddleware.js'
 
@@ -21,6 +24,9 @@ router.get('/assets', getPublishedAssets)
 router.get('/projects', getPublishedProjects)
 router.get('/projects/:projectId', getProjectById)
 router.post('/projects', protect, createProject)
+router.patch('/projects/:projectId', protect, updateProject)
+router.delete('/projects/:projectId', protect, deleteProject)
+router.post('/content/:contentType/:contentId/engagement', protect, updateContentEngagement)
 router.put(
   '/projects/:projectId/files',
   protect,

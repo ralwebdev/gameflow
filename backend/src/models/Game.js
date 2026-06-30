@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import engagementSchema from './engagementSchema.js'
 
 const gameSchema = new mongoose.Schema(
   {
@@ -42,6 +43,10 @@ const gameSchema = new mongoose.Schema(
     isPublished: {
       type: Boolean,
       default: true,
+    },
+    engagement: {
+      type: engagementSchema,
+      default: () => ({}),
     },
     displayOrder: {
       type: Number,
