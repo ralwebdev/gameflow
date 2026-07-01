@@ -8,39 +8,110 @@ import {
   CheckIcon,
   ChevronDownIcon,
   CloseIcon,
-  EditIcon,
 } from '../../components/icons/Icons'
 
-const COLORS = {
-  bg: '#0B0D12',
-  surface: '#121620',
-  elevated: 'rgba(255,255,255,0.06)',
-  input: 'rgba(15,23,42,0.72)',
-  border: 'rgba(255,255,255,0.08)',
-  text: '#FFFFFF',
-  textSecondary: '#B8C0CC',
-  muted: '#7D8796',
-  accent: '#FF7A59',
-  success: '#22D3EE',
-  primaryButton: '#F8F9FA',
-  primaryButtonText: '#111827',
+/* ─── Design tokens ────────────────────────────────────────────────────── */
+const C = {
+  bg:          '#0D1117',
+  surface:     '#131920',
+  card:        '#1A2030',
+  cardHover:   '#1F2638',
+  border:      'rgba(255,255,255,0.07)',
+  borderHover: 'rgba(255,255,255,0.14)',
+  text:        '#F0F4FF',
+  sub:         '#8892A4',
+  muted:       'rgba(255,255,255,0.28)',
+  accent:      '#FF7A45',
+  accentDim:   'rgba(255,122,69,0.12)',
+  accentBorder:'rgba(255,122,69,0.28)',
+  success:     '#34D399',
+  successDim:  'rgba(52,211,153,0.1)',
 }
 
+/* ─── Inline SVG icons for the 3 type cards ────────────────────────────── */
+const GamepadIcon = ({ size = 22, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="6" y1="11" x2="10" y2="11"/><line x1="8" y1="9" x2="8" y2="13"/>
+    <line x1="15" y1="12" x2="15.01" y2="12"/><line x1="18" y1="10" x2="18.01" y2="10"/>
+    <path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258A4 4 0 0 0 17.32 5z"/>
+  </svg>
+)
+
+const CubeIcon = ({ size = 22, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+    <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+    <line x1="12" y1="22.08" x2="12" y2="12"/>
+  </svg>
+)
+
+const ImageIcon = ({ size = 22, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+    <circle cx="8.5" cy="8.5" r="1.5"/>
+    <polyline points="21 15 16 10 5 21"/>
+  </svg>
+)
+
+const UploadCloudIcon = ({ size = 28, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="16 16 12 12 8 16"/>
+    <line x1="12" y1="12" x2="12" y2="21"/>
+    <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+  </svg>
+)
+
+const ImagePlusIcon = ({ size = 28, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2"/>
+    <circle cx="8.5" cy="8.5" r="1.5"/>
+    <polyline points="21 15 16 10 5 21"/>
+    <line x1="16" y1="5" x2="16" y2="11"/>
+    <line x1="13" y1="8" x2="19" y2="8"/>
+  </svg>
+)
+
+const EyeIcon = ({ size = 18, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+    <circle cx="12" cy="12" r="3"/>
+  </svg>
+)
+
+const LockIcon2 = ({ size = 15, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+  </svg>
+)
+
+const GlobeIcon2 = ({ size = 15, color = 'currentColor' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10"/>
+    <line x1="2" y1="12" x2="22" y2="12"/>
+    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+  </svg>
+)
+
+/* ─── Static data ───────────────────────────────────────────────────────── */
 const TYPE_OPTIONS = [
   {
     value: 'game',
     label: 'WebGL Game',
-    description: 'Upload a playable Unity, Godot, or custom WebGL build.',
+    description: 'Playable Unity, Godot, or custom WebGL build.',
+    Icon: GamepadIcon,
   },
   {
     value: '3d',
     label: '3D Art / Model',
-    description: 'Upload `.glb` or `.gltf` assets with textures.',
+    description: 'Upload .glb or .gltf assets with textures.',
+    Icon: CubeIcon,
   },
   {
     value: '2d',
-    label: '2D Art / Model',
-    description: 'Upload image-based art, illustrations, or turnarounds.',
+    label: '2D Art / Illustration',
+    description: 'Images, concept art, posters, or turnarounds.',
+    Icon: ImageIcon,
   },
 ]
 
@@ -51,1214 +122,1065 @@ const CATEGORY_OPTIONS = {
 }
 
 const SOFTWARE_SUGGESTIONS = [
-  'Unity',
-  'Unreal Engine',
-  'Blender',
-  'Godot',
-  'Maya',
-  'ZBrush',
-  'Substance Painter',
-  'Photoshop',
-  'After Effects',
+  'Unity', 'Unreal Engine', 'Blender', 'Godot', 'Maya',
+  'ZBrush', 'Substance Painter', 'Photoshop', 'After Effects',
 ]
 
 const FILE_HINTS = {
-  game: 'Pick the folder that contains your `index.html` file and all WebGL build files.',
-  '3d': 'Upload the `.glb` or `.gltf` file, plus any textures or sidecar files in the same folder.',
+  game: 'Select the folder that contains your index.html and all WebGL build files.',
+  '3d': 'Upload the .glb or .gltf file, plus any textures or sidecar files.',
   '2d': 'Upload the main image file for your artwork.',
 }
 
-const FIELD_STYLE = {
-  minHeight: 56,
-  borderRadius: 16,
-  background: COLORS.input,
-  border: `1px solid ${COLORS.border}`,
-  color: COLORS.text,
-  padding: '14px 18px',
-  fontSize: 14,
-  outline: 'none',
-  width: '100%',
-}
+const STEP_LABELS = ['Type', 'Assets', 'Info', 'Preview', 'Publish']
 
+/* ─── Helpers ───────────────────────────────────────────────────────────── */
 function formatBytes(bytes) {
   if (!bytes) return '0 B'
   const units = ['B', 'KB', 'MB', 'GB']
-  const index = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1)
-  const value = bytes / 1024 ** index
-  return `${value.toFixed(value >= 10 || index === 0 ? 0 : 1)} ${units[index]}`
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1)
+  const v = bytes / 1024 ** i
+  return `${v.toFixed(v >= 10 || i === 0 ? 0 : 1)} ${units[i]}`
 }
-
-function isImageFile(file) {
-  return /\.(png|jpg|jpeg|webp|gif|avif)$/i.test(file?.name || '')
-}
-
-function isModelFile(file) {
-  return /\.(glb|gltf)$/i.test(file?.name || '')
-}
-
-function isHtmlFile(file) {
-  return /\.html?$/i.test(file?.name || '')
-}
+const isImageFile = (f) => /\.(png|jpg|jpeg|webp|gif|avif)$/i.test(f?.name || '')
+const isModelFile = (f) => /\.(glb|gltf)$/i.test(f?.name || '')
+const isHtmlFile  = (f) => /\.html?$/i.test(f?.name || '')
 
 function useObjectUrl(file) {
   const url = useMemo(() => (file ? URL.createObjectURL(file) : ''), [file])
-
-  useEffect(() => {
-    if (!url) {
-      return undefined
-    }
-
-    return () => {
-      URL.revokeObjectURL(url)
-    }
-  }, [url])
-
+  useEffect(() => { if (url) return () => URL.revokeObjectURL(url) }, [url])
   return url
 }
 
-const StepBadge = ({ index, label, status }) => (
-  <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, minWidth: 54 }}>
-      <div
-        style={{
-          width: 28,
-          height: 28,
-          borderRadius: '50%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background:
-            status === 'done'
-              ? COLORS.success
-              : status === 'active'
-                ? COLORS.accent
-                : 'rgba(255,255,255,0.10)',
-          color: status === 'upcoming' ? COLORS.muted : '#fff',
-          fontSize: 12,
-          fontWeight: 800,
-          boxShadow: status === 'active' ? '0 8px 18px rgba(255,122,89,0.24)' : 'none',
-        }}
-      >
-        {status === 'done' ? <CheckIcon size={14} weight="3" /> : index}
+/* ─── Sub-components ────────────────────────────────────────────────────── */
+const StepDot = ({ index, label, status }) => {
+  const active = status === 'active'
+  const done   = status === 'done'
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, zIndex: 2 }}>
+      <div style={{
+        width: 28, height: 28, borderRadius: '50%',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: active ? C.accent : done ? '#1E1715' : '#0D1117',
+        border: `1.5px solid ${active ? C.accent : done ? C.accentBorder : 'rgba(255,255,255,0.10)'}`,
+        color: active ? '#fff' : done ? C.accent : C.muted,
+        fontSize: 11, fontWeight: 600,
+        transition: 'all 0.25s ease',
+        zIndex: 2,
+        boxShadow: active ? '0 0 0 4px rgba(255,122,69,0.12)' : 'none',
+      }}>
+        {done ? <CheckIcon size={13} color={C.accent} weight="3" /> : index}
       </div>
-      <span
-        style={{
-          fontSize: 11,
-          fontWeight: 700,
-          color:
-            status === 'done'
-              ? COLORS.success
-              : status === 'active'
-                ? COLORS.text
-                : COLORS.muted,
-        }}
-      >
+      <span style={{
+        marginTop: 6, fontSize: 10.5, fontWeight: active ? 600 : 400,
+        color: active ? C.text : done ? C.sub : C.muted,
+        transition: 'color 0.2s',
+        letterSpacing: '0.01em',
+      }}>
         {label}
       </span>
     </div>
-  </div>
+  )
+}
+
+const FormLabel = ({ children }) => (
+  <label style={{
+    display: 'block',
+    fontSize: 11.5, fontWeight: 600, letterSpacing: '0.07em',
+    textTransform: 'uppercase', color: C.sub,
+    marginBottom: 8,
+  }}>
+    {children}
+  </label>
 )
 
-const Chip = ({ value, onRemove, tone = 'default' }) => (
-  <div
-    style={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: 8,
-      padding: '9px 14px',
-      borderRadius: 999,
-      background: tone === 'accent' ? 'rgba(255,122,89,0.18)' : 'rgba(255,255,255,0.08)',
-      border: tone === 'accent' ? '1px solid rgba(255,122,89,0.35)' : `1px solid ${COLORS.border}`,
-      color: COLORS.text,
-      fontSize: 13,
-      fontWeight: 600,
-    }}
-  >
+const Tag = ({ value, onRemove, accent }) => (
+  <span style={{
+    display: 'inline-flex', alignItems: 'center', gap: 5,
+    padding: '5px 10px',
+    borderRadius: 6,
+    background: accent ? C.accentDim : 'rgba(255,255,255,0.04)',
+    border: `1px solid ${accent ? C.accentBorder : C.border}`,
+    color: accent ? C.accent : C.sub,
+    fontSize: 12, fontWeight: 500,
+    maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+  }}>
     {value}
-    {onRemove ? (
-      <button
-        type="button"
-        onClick={onRemove}
-        aria-label={`Remove ${value}`}
-        style={{
-          width: 18,
-          height: 18,
-          padding: 0,
-          border: 'none',
-          borderRadius: '50%',
-          background: 'rgba(255,255,255,0.12)',
-          color: COLORS.text,
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-          flexShrink: 0,
-        }}
+    {onRemove && (
+      <button type="button" onClick={onRemove}
+        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+          color: 'inherit', opacity: 0.55, lineHeight: 1, display: 'flex', alignItems: 'center' }}
       >
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
       </button>
-    ) : null}
-  </div>
+    )}
+  </span>
 )
 
+/* ─── Field focus style injection ───────────────────────────────────────── */
+const fieldBase = {
+  background: C.card,
+  border: `1px solid ${C.border}`,
+  borderRadius: 10,
+  color: C.text,
+  fontSize: 14,
+  fontFamily: '"Inter", -apple-system, sans-serif',
+  outline: 'none',
+  width: '100%',
+  padding: '13px 16px',
+  transition: 'border-color 0.18s, box-shadow 0.18s',
+  lineHeight: 1.5,
+}
+
+/* ─── Main Component ─────────────────────────────────────────────────────── */
 const UploadPage = () => {
   const navigate = useNavigate()
   const { isGuest, token } = useAuth()
 
-  const [currentStep, setCurrentStep] = useState(1)
-  const [projectType, setProjectType] = useState('game')
-  const [mode, setMode] = useState('landscape')
-  const [projectTitle, setProjectTitle] = useState('')
-  const [category, setCategory] = useState(CATEGORY_OPTIONS.game[0])
-  const [description, setDescription] = useState('')
-  const [tags, setTags] = useState([])
-  const [tagInput, setTagInput] = useState('')
-  const [software, setSoftware] = useState(['Blender'])
-  const [softwareInput, setSoftwareInput] = useState('')
-  const [visibility, setVisibility] = useState('public')
-  const [assetFiles, setAssetFiles] = useState([])
-  const [coverFile, setCoverFile] = useState(null)
-  const [isPublishing, setIsPublishing] = useState(false)
-  const [publishedProject, setPublishedProject] = useState(null)
-  const [errorMessage, setErrorMessage] = useState('')
-  const [toast, setToast] = useState(null)
+  const [step,       setStep]       = useState(1)
+  const [type,       setType]       = useState('game')
+  const [mode,       setMode]       = useState('landscape')
+  const [title,      setTitle]      = useState('')
+  const [category,   setCategory]   = useState(CATEGORY_OPTIONS.game[0])
+  const [desc,       setDesc]       = useState('')
+  const [tags,       setTags]       = useState([])
+  const [tagInput,   setTagInput]   = useState('')
+  const [software,   setSoftware]   = useState(['Blender'])
+  const [swInput,    setSwInput]    = useState('')
+  const [visibility, setVis]        = useState('public')
+  const [assets,     setAssets]     = useState([])
+  const [cover,      setCover]      = useState(null)
+  const [publishing, setPublishing] = useState(false)
+  const [published,  setPublished]  = useState(null)
+  const [error,      setError]      = useState('')
+  const [toast,      setToast]      = useState(null)
+  const [focused,    setFocused]    = useState('')
 
-  const currentCategories = CATEGORY_OPTIONS[projectType] || CATEGORY_OPTIONS.game
+  const cats = CATEGORY_OPTIONS[type] || CATEGORY_OPTIONS.game
 
-  const selectedMainFile = useMemo(() => {
-    if (!assetFiles.length) {
-      return null
-    }
+  const mainFile = useMemo(() => {
+    if (!assets.length) return null
+    const files = assets.filter(i => !i.relativePath.toLowerCase().startsWith('cover/'))
+    if (type === 'game')
+      return files.find(i => isHtmlFile(i.file) && i.file.name.toLowerCase() === 'index.html')
+        ?? files.find(i => isHtmlFile(i.file)) ?? files[0] ?? null
+    if (type === '3d')
+      return files.find(i => isModelFile(i.file) && i.file.name.toLowerCase().endsWith('.glb'))
+        ?? files.find(i => isModelFile(i.file)) ?? files[0] ?? null
+    return files.find(i => isImageFile(i.file)) ?? files[0] ?? null
+  }, [assets, type])
 
-    const lowerFiles = [...assetFiles].filter((item) => !item.relativePath.toLowerCase().startsWith('cover/'))
+  const mainUrl    = useObjectUrl(mainFile?.file || null)
+  const coverUrl   = useObjectUrl(cover?.file || null)
+  const previewUrl = coverUrl || mainUrl
+  const totalSize  = assets.reduce((s, i) => s + i.file.size, 0) + (cover?.file.size || 0)
 
-    if (projectType === 'game') {
-      return (
-        lowerFiles.find((item) => isHtmlFile(item.file) && item.file.name.toLowerCase() === 'index.html')
-        ?? lowerFiles.find((item) => isHtmlFile(item.file))
-        ?? lowerFiles[0]
-        ?? null
-      )
-    }
+  const canNext =
+    (step === 1 && !!type) ||
+    (step === 2 && assets.length > 0) ||
+    (step === 3 && !!title.trim() && !!category.trim()) ||
+    step >= 4
 
-    if (projectType === '3d') {
-      return (
-        lowerFiles.find((item) => isModelFile(item.file) && item.file.name.toLowerCase().endsWith('.glb'))
-        ?? lowerFiles.find((item) => isModelFile(item.file))
-        ?? lowerFiles[0]
-        ?? null
-      )
-    }
-
-    return lowerFiles.find((item) => isImageFile(item.file)) ?? lowerFiles[0] ?? null
-  }, [assetFiles, projectType])
-
-  const mainPreviewUrl = useObjectUrl(selectedMainFile?.file || null)
-  const coverPreviewUrl = useObjectUrl(coverFile?.file || null)
-  const displayPreviewUrl = coverPreviewUrl || mainPreviewUrl
-  const totalUploadSize = assetFiles.reduce((sum, item) => sum + item.file.size, 0) + (coverFile?.file.size || 0)
-  const canGoNext =
-    (currentStep === 1 && !!projectType) ||
-    (currentStep === 2 && assetFiles.length > 0) ||
-    (currentStep === 3 && !!projectTitle.trim() && !!category.trim()) ||
-    currentStep >= 4
-
-  const stepStatuses = [1, 2, 3, 4, 5].map((step) => ({
-    index: step,
-    label: ['Type', 'Assets', 'Info', 'Preview', 'Publish'][step - 1],
-    status: currentStep > step ? 'done' : currentStep === step ? 'active' : 'upcoming',
+  const steps = STEP_LABELS.map((label, i) => ({
+    index: i + 1, label,
+    status: step > i + 1 ? 'done' : step === i + 1 ? 'active' : 'upcoming',
   }))
 
-  const removeAsset = (relativePath) => {
-    setAssetFiles((prev) => prev.filter((item) => item.relativePath !== relativePath))
+  const activeMeta = TYPE_OPTIONS.find(o => o.value === type) || TYPE_OPTIONS[0]
+
+  const selectType = (t) => {
+    setType(t)
+    setCategory(CATEGORY_OPTIONS[t][0])
+    setMode(t === '2d' ? 'portrait' : 'landscape')
   }
 
   const addTag = () => {
-    const nextTag = tagInput.trim().replace(/^#/, '')
-    if (!nextTag) {
-      return
-    }
-
-    if (!tags.includes(nextTag)) {
-      setTags((prev) => [...prev, nextTag])
-    }
+    const v = tagInput.trim().replace(/^#/, '')
+    if (v && !tags.includes(v)) setTags(p => [...p, v])
     setTagInput('')
   }
 
-  const addSoftware = () => {
-    const nextSoftware = softwareInput.trim()
-    if (!nextSoftware) {
-      return
-    }
-
-    if (!software.includes(nextSoftware)) {
-      setSoftware((prev) => [...prev, nextSoftware])
-    }
-    setSoftwareInput('')
+  const addSw = () => {
+    const v = swInput.trim()
+    if (v && !software.includes(v)) setSoftware(p => [...p, v])
+    setSwInput('')
   }
 
-  const handleAssetSelection = (event) => {
-    const fileList = Array.from(event.target.files || [])
-    const nextAssets = fileList.map((file) => ({
-      file,
-      relativePath: (file.webkitRelativePath || file.name).replace(/\\/g, '/'),
-    }))
-
-    setAssetFiles(nextAssets)
-    setErrorMessage('')
+  const handleAssets = (e) => {
+    const list = Array.from(e.target.files || [])
+    setAssets(list.map(f => ({
+      file: f,
+      relativePath: (f.webkitRelativePath || f.name).replace(/\\/g, '/'),
+    })))
+    setError('')
   }
 
-  const handleCoverSelection = (event) => {
-    const nextFile = event.target.files?.[0]
-    if (!nextFile) {
-      return
-    }
-
-    setCoverFile({
-      file: nextFile,
-      relativePath: `cover/${nextFile.name}`,
-    })
+  const handleCover = (e) => {
+    const f = e.target.files?.[0]
+    if (f) setCover({ file: f, relativePath: `cover/${f.name}` })
   }
 
-  const validateStep = (step) => {
-    if (step === 1 && !projectType) {
-      setErrorMessage('Please choose a project type.')
-      return false
+  const validate = (s) => {
+    if (s === 1 && !type)           { setError('Choose a project type.'); return false }
+    if (s === 2 && !assets.length)  { setError('Upload at least one file.'); return false }
+    if (s === 3) {
+      if (!title.trim())            { setError('Add a project title.'); return false }
+      if (!category.trim())         { setError('Pick a category.'); return false }
     }
-
-    if (step === 2 && assetFiles.length === 0) {
-      setErrorMessage('Please upload at least one asset file.')
-      return false
-    }
-
-    if (step === 3) {
-      if (!projectTitle.trim()) {
-        setErrorMessage('Please add a project title.')
-        return false
-      }
-
-      if (!category.trim()) {
-        setErrorMessage('Please pick a category.')
-        return false
-      }
-    }
-
-    setErrorMessage('')
+    setError('')
     return true
   }
 
   const handleNext = () => {
-    if (!validateStep(currentStep)) {
-      return
-    }
-
-    setCurrentStep((prev) => Math.min(prev + 1, 5))
+    if (validate(step)) setStep(p => Math.min(p + 1, 5))
   }
 
   const handleBack = () => {
-    if (currentStep === 1) {
-      navigate('/app/profile')
-      return
-    }
-
-    setErrorMessage('')
-    setCurrentStep((prev) => Math.max(prev - 1, 1))
+    if (step === 1) { navigate('/app/profile'); return }
+    setError('')
+    setStep(p => Math.max(p - 1, 1))
   }
 
   const handlePublish = async () => {
-    if (isGuest) {
-      setToast({ action: 'publish projects' })
-      return
-    }
-
-    if (!validateStep(3) || assetFiles.length === 0) {
-      return
-    }
-
-    setIsPublishing(true)
-
+    if (isGuest) { setToast({ action: 'publish projects' }); return }
+    if (!validate(3) || !assets.length) return
+    setPublishing(true)
     try {
       const draft = await createProject(token, {
-        title: projectTitle.trim(),
-        type: projectType,
-        category: category.trim(),
-        description: description.trim(),
-        tags,
-        software,
-        visibility,
-        mode,
+        title: title.trim(), type, category: category.trim(),
+        description: desc.trim(), tags, software, visibility, mode,
       })
-
-      const uploadQueue = [...assetFiles]
-
-      if (coverFile) {
-        uploadQueue.unshift(coverFile)
-      }
-
-      for (const item of uploadQueue) {
-        const fileMeta = {
-          name: item.file.name,
-          relativePath: item.relativePath,
+      const queue = [...assets]
+      if (cover) queue.unshift(cover)
+      for (const item of queue) {
+        await uploadProjectFile(token, draft.project.id, {
+          name: item.file.name, relativePath: item.relativePath,
           mimeType: item.file.type || '',
-        }
-        await uploadProjectFile(token, draft.project.id, fileMeta, item.file)
+        }, item.file)
       }
-
-      const response = await publishProject(token, draft.project.id)
-
-      setPublishedProject(response.project)
-      setCurrentStep(5)
-      setErrorMessage('')
-
-      // Signal the feed to reload on next visit
-      window.dispatchEvent(new CustomEvent('projectPublished', { detail: response.project }))
-    } catch (error) {
-      setErrorMessage(error.message || 'Failed to publish project.')
+      const res = await publishProject(token, draft.project.id)
+      setPublished(res.project)
+      setStep(5)
+      setError('')
+      window.dispatchEvent(new CustomEvent('projectPublished', { detail: res.project }))
+    } catch (err) {
+      setError(err.message || 'Failed to publish.')
     } finally {
-      setIsPublishing(false)
+      setPublishing(false)
     }
   }
 
-  const activeTypeMeta = TYPE_OPTIONS.find((item) => item.value === projectType) || TYPE_OPTIONS[0]
+  const focusStyle = (name) => focused === name
+    ? { borderColor: C.accent, boxShadow: '0 0 0 3px rgba(255,122,69,0.12)' } : {}
 
-  const selectProjectType = (nextType) => {
-    setProjectType(nextType)
-    setCategory(CATEGORY_OPTIONS[nextType][0])
-    setMode(nextType === '2d' ? 'portrait' : 'landscape')
-  }
-
+  /* ── Render ─── */
   return (
     <div
-      className="mobile-frame anim-fade-up"
+      className="mobile-frame"
       style={{
-        position: 'relative',
-        width: '100%',
-        height: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        background: COLORS.bg,
-        color: COLORS.text,
-        fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif',
+        position: 'relative', width: '100%', height: '100vh',
+        display: 'flex', flexDirection: 'column', overflow: 'hidden',
+        background: C.bg, color: C.text,
+        fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
         WebkitFontSmoothing: 'antialiased',
       }}
     >
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background:
-            'radial-gradient(circle at top left, rgba(255,122,89,0.14), transparent 28%), radial-gradient(circle at top right, rgba(34,211,238,0.10), transparent 30%), linear-gradient(180deg, rgba(18,22,32,0.9) 0%, rgba(11,13,18,1) 26%)',
-          pointerEvents: 'none',
-        }}
-      />
+      {/* Ambient gradient */}
+      <div aria-hidden style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        background: 'radial-gradient(ellipse 80% 40% at 50% -10%, rgba(255,122,69,0.07) 0%, transparent 70%)',
+      }} />
 
-      <div
-        style={{
-          position: 'relative',
-          zIndex: 1,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '18px 18px 10px',
-          paddingTop: 'calc(env(safe-area-inset-top, 0px) + 18px)',
-          flexShrink: 0,
-        }}
-      >
-        <h1 style={{ fontSize: 20, fontWeight: 800, color: COLORS.text, margin: 0, letterSpacing: -0.4 }}>
-          New Project
-        </h1>
+      {/* ── HEADER ── */}
+      <div style={{
+        position: 'relative', zIndex: 1, flexShrink: 0,
+        display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
+        padding: '28px 22px 0',
+        paddingTop: 'calc(env(safe-area-inset-top,0px) + 28px)',
+      }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: 28, fontWeight: 700, letterSpacing: '-0.025em', lineHeight: 1.15 }}>
+            New Project
+          </h1>
+          <p style={{ margin: '5px 0 0', fontSize: 13.5, color: C.sub, lineHeight: 1.4 }}>
+            Choose how you'd like to publish your work.
+          </p>
+        </div>
         <button
-          type="button"
-          aria-label="Close"
+          type="button" aria-label="Close"
           onClick={() => navigate('/app/profile')}
           style={{
-            width: 38,
-            height: 38,
-            borderRadius: '50%',
-            border: '1px solid rgba(255,255,255,0.10)',
-            background: 'rgba(255,255,255,0.06)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            color: COLORS.text,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
+            width: 34, height: 34, borderRadius: '50%',
+            border: `1px solid ${C.border}`,
+            background: 'rgba(255,255,255,0.03)',
+            color: C.sub, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'all 0.15s',
+            flexShrink: 0, marginLeft: 12,
           }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = C.text }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.color = C.sub }}
         >
-          <CloseIcon size={20} />
+          <CloseIcon size={15} />
         </button>
       </div>
 
-      <div
-        style={{
-          position: 'relative',
-          zIndex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 8,
-          padding: '6px 18px 14px',
-          overflowX: 'auto',
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
-        }}
-      >
-        {stepStatuses.map((step) => (
-          <StepBadge key={step.index} index={step.index} label={step.label} status={step.status} />
-        ))}
+      {/* ── STEPPER ── */}
+      <div style={{
+        position: 'relative', zIndex: 1, flexShrink: 0,
+        display: 'flex', alignItems: 'flex-start',
+        padding: '24px 22px 20px',
+      }}>
+        {/* track line */}
+        <div style={{
+          position: 'absolute', top: 38, left: 48, right: 48, height: 1,
+          background: C.border, zIndex: 0,
+        }} />
+        {/* progress fill */}
+        <div style={{
+          position: 'absolute', top: 38, left: 48,
+          width: `${((step - 1) / 4) * (100)}%`,
+          maxWidth: 'calc(100% - 96px)',
+          height: 1, background: C.accent, zIndex: 1,
+          transition: 'width 0.35s cubic-bezier(0.4,0,0.2,1)',
+        }} />
+        {steps.map(s => <StepDot key={s.index} {...s} />)}
       </div>
 
-      <div
-        style={{
-          position: 'relative',
-          zIndex: 1,
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          minHeight: 0,
-        }}
-      >
-        <div
-          style={{
-            flex: 1,
-            overflowY: 'auto',
-            padding: '12px 16px 0',
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none',
-          }}
-        >
-          {errorMessage ? (
-            <div
-              style={{
-                padding: '12px 14px',
-                borderRadius: 16,
-                background: 'rgba(255,122,89,0.14)',
-                border: '1px solid rgba(255,122,89,0.28)',
-                color: '#FFD9CF',
-                fontSize: 13,
-                lineHeight: 1.45,
-                marginBottom: 14,
-              }}
-            >
-              {errorMessage}
+      {/* ── SCROLL BODY ── */}
+      <div style={{
+        position: 'relative', zIndex: 1, flex: 1,
+        display: 'flex', flexDirection: 'column', minHeight: 0,
+      }}>
+        <div style={{
+          flex: 1, overflowY: 'auto',
+          padding: '0 16px 0',
+          scrollbarWidth: 'none', msOverflowStyle: 'none',
+        }}>
+          {/* Error banner */}
+          {error && (
+            <div style={{
+              padding: '11px 15px', borderRadius: 10, marginBottom: 16,
+              background: 'rgba(255,80,60,0.08)', border: '1px solid rgba(255,80,60,0.2)',
+              color: '#FFB8B0', fontSize: 13, lineHeight: 1.5,
+            }}>
+              {error}
             </div>
-          ) : null}
+          )}
 
-          <div
-            style={{
-              background: COLORS.elevated,
-              border: `1px solid ${COLORS.border}`,
-              borderRadius: 28,
-              backdropFilter: 'blur(16px)',
-              WebkitBackdropFilter: 'blur(16px)',
-              boxShadow: '0 24px 60px rgba(0,0,0,0.30)',
-              padding: 24,
-            }}
-          >
-            {currentStep !== 5 ? (
+          {/* Main card */}
+          <div style={{
+            background: C.surface,
+            border: `1px solid ${C.border}`,
+            borderRadius: 20,
+            boxShadow: '0 4px 24px rgba(0,0,0,0.18)',
+            overflow: 'hidden',
+          }}>
+
+            {step !== 5 ? (
               <>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 22 }}>
-                  <div
-                    style={{
-                      width: 56,
-                      height: 56,
-                      borderRadius: 18,
-                      background: 'rgba(255,255,255,0.08)',
-                      position: 'relative',
-                      overflow: 'hidden',
-                      flexShrink: 0,
-                      border: '1px solid rgba(255,255,255,0.08)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    {projectType === 'game' ? (
-                      <div style={{ fontSize: 12, fontWeight: 800, textAlign: 'center', color: COLORS.textSecondary }}>
-                        WEBGL
-                      </div>
-                    ) : projectType === '3d' ? (
-                      <div style={{ fontSize: 12, fontWeight: 800, textAlign: 'center', color: COLORS.textSecondary }}>
-                        3D
-                      </div>
-                    ) : (
-                      <div style={{ fontSize: 12, fontWeight: 800, textAlign: 'center', color: COLORS.textSecondary }}>
-                        2D
-                      </div>
-                    )}
-                    <div
-                      style={{
-                        position: 'absolute',
-                        bottom: -2,
-                        right: -2,
-                        width: 22,
-                        height: 22,
-                        borderRadius: '50%',
-                        background: 'rgba(18,22,32,0.96)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        boxShadow: '0 8px 18px rgba(0,0,0,.32)',
-                        border: '1px solid rgba(255,255,255,0.12)',
-                        color: COLORS.text,
-                      }}
-                    >
-                      <EditIcon size={11} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <h2 style={{ fontSize: 18, fontWeight: 800, color: COLORS.text, margin: '0 0 4px', letterSpacing: -0.3 }}>
-                      {currentStep === 1 && 'Choose your project type'}
-                      {currentStep === 2 && 'Upload your assets'}
-                      {currentStep === 3 && 'Tell us about your project'}
-                      {currentStep === 4 && 'Preview your project'}
-                    </h2>
-                    <p style={{ fontSize: 13, color: COLORS.textSecondary, margin: 0, fontWeight: 500 }}>
-                      {currentStep === 1 && activeTypeMeta.description}
-                      {currentStep === 2 && FILE_HINTS[projectType]}
-                      {currentStep === 3 && 'Add the details people will see when your project goes live.'}
-                      {currentStep === 4 && 'Review the project before we publish it.'}
-                    </p>
-                  </div>
-                </div>
-
-                {currentStep === 1 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12 }}>
-                      {TYPE_OPTIONS.map((option) => {
-                        const selected = option.value === projectType
-                        return (
-                          <button
-                            key={option.value}
-                            type="button"
-                            onClick={() => selectProjectType(option.value)}
-                            style={{
-                              width: '100%',
-                              padding: 16,
-                              borderRadius: 18,
-                              border: `1px solid ${selected ? 'rgba(255,122,89,0.42)' : COLORS.border}`,
-                              background: selected ? 'rgba(255,122,89,0.12)' : 'rgba(18,22,32,0.92)',
-                              color: COLORS.text,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                              textAlign: 'left',
-                              cursor: 'pointer',
-                            }}
-                          >
-                            <div>
-                              <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 4 }}>{option.label}</div>
-                              <div style={{ fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.4 }}>
-                                {option.description}
-                              </div>
-                            </div>
-                            {selected ? <CheckIcon size={18} /> : <div style={{ width: 18, height: 18, borderRadius: 999, border: `1px solid ${COLORS.border}` }} />}
-                          </button>
-                        )
-                      })}
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                      <label style={{ fontSize: 11, fontWeight: 700, color: COLORS.textSecondary, textTransform: 'uppercase' }}>
-                        Orientation
-                      </label>
-                      <div style={{ display: 'flex', gap: 10 }}>
-                        {['portrait', 'landscape'].map((value) => {
-                          const selected = mode === value
-                          return (
-                            <button
-                              key={value}
-                              type="button"
-                              onClick={() => setMode(value)}
-                              style={{
-                                flex: 1,
-                                minHeight: 48,
-                                borderRadius: 14,
-                                border: `1px solid ${selected ? 'rgba(255,122,89,0.42)' : COLORS.border}`,
-                                background: selected ? 'rgba(255,122,89,0.12)' : 'rgba(15,23,42,0.72)',
-                                color: COLORS.text,
-                                fontSize: 14,
-                                fontWeight: 700,
-                                cursor: 'pointer',
-                              }}
-                            >
-                              {value === 'portrait' ? 'Portrait' : 'Landscape'}
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-
-                {currentStep === 2 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-                    <div
-                      style={{
-                        padding: 16,
-                        borderRadius: 18,
-                        background: 'rgba(18,22,32,0.92)',
-                        border: `1px solid ${COLORS.border}`,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 12,
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-                        <div>
-                          <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 4 }}>Main assets</div>
-                          <div style={{ fontSize: 12, color: COLORS.textSecondary }}>{FILE_HINTS[projectType]}</div>
-                        </div>
-                        <label
-                          style={{
-                            padding: '8px 14px',
-                            borderRadius: 999,
-                            background: 'rgba(255,255,255,0.08)',
-                            border: `1px solid ${COLORS.border}`,
-                            fontSize: 12,
-                            fontWeight: 700,
-                            cursor: 'pointer',
-                            color: COLORS.text,
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          Choose Files
-                          <input
-                            type="file"
-                            accept={
-                              projectType === 'game'
-                                ? '.html,.htm,.js,.json,.wasm,.data,.css,.png,.jpg,.jpeg,.webp,.mp3,.ogg'
-                                : projectType === '3d'
-                                  ? '.glb,.gltf,.bin,.png,.jpg,.jpeg,.webp'
-                                  : '.png,.jpg,.jpeg,.webp,.gif,.avif'
-                            }
-                            multiple
-                            {...(projectType === 'game' ? { webkitdirectory: '', directory: '' } : {})}
-                            onChange={handleAssetSelection}
-                            style={{ display: 'none' }}
-                          />
-                        </label>
-                      </div>
-
-                      <div style={{ fontSize: 12, color: COLORS.muted, lineHeight: 1.5 }}>
-                        For WebGL games, select the folder that contains <code>index.html</code>. For 3D projects,
-                        upload the model file and its textures together. For 2D projects, the main image is enough.
-                      </div>
-
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                        {assetFiles.length > 0 ? (
-                          assetFiles.map((item) => (
-                            <Chip
-                              key={item.relativePath}
-                              value={`${item.relativePath} (${formatBytes(item.file.size)})`}
-                              onRemove={() => removeAsset(item.relativePath)}
-                              tone={item === selectedMainFile ? 'accent' : 'default'}
-                            />
-                          ))
-                        ) : (
-                          <div style={{ fontSize: 13, color: COLORS.textSecondary }}>No files selected yet.</div>
-                        )}
-                      </div>
-
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: COLORS.textSecondary }}>
-                        <span>{assetFiles.length} file(s)</span>
-                        <span>{formatBytes(totalUploadSize)}</span>
-                      </div>
-                    </div>
-
-                    <div
-                      style={{
-                        padding: 16,
-                        borderRadius: 18,
-                        background: 'rgba(18,22,32,0.92)',
-                        border: `1px solid ${COLORS.border}`,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: 12,
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-                        <div>
-                          <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 4 }}>Cover image</div>
-                          <div style={{ fontSize: 12, color: COLORS.textSecondary }}>
-                            Optional, but recommended for games and 3D uploads.
-                          </div>
-                        </div>
-                        <label
-                          style={{
-                            padding: '8px 14px',
-                            borderRadius: 999,
-                            background: 'rgba(255,255,255,0.08)',
-                            border: `1px solid ${COLORS.border}`,
-                            fontSize: 12,
-                            fontWeight: 700,
-                            cursor: 'pointer',
-                            color: COLORS.text,
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          Choose Cover
-                          <input
-                            type="file"
-                            accept=".png,.jpg,.jpeg,.webp,.gif,.avif"
-                            onChange={handleCoverSelection}
-                            style={{ display: 'none' }}
-                          />
-                        </label>
-                      </div>
-
-                      {coverFile ? (
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                          <Chip value={`${coverFile.relativePath} (${formatBytes(coverFile.file.size)})`} tone="accent" />
-                          <button
-                            type="button"
-                            onClick={() => setCoverFile(null)}
-                            style={{
-                              border: 'none',
-                              background: 'transparent',
-                              color: COLORS.accent,
-                              fontWeight: 700,
-                              cursor: 'pointer',
-                            }}
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      ) : (
-                        <div style={{ fontSize: 13, color: COLORS.textSecondary }}>No cover image selected.</div>
-                      )}
-                    </div>
-                  </div>
-                ) : null}
-
-                {currentStep === 3 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      <label style={{ fontSize: 11, fontWeight: 700, color: COLORS.textSecondary, textTransform: 'uppercase' }}>
-                        Project Title
-                      </label>
-                      <input
-                        type="text"
-                        value={projectTitle}
-                        onChange={(event) => setProjectTitle(event.target.value)}
-                        placeholder="Neon Cube Composition"
-                        style={FIELD_STYLE}
-                      />
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      <label style={{ fontSize: 11, fontWeight: 700, color: COLORS.textSecondary, textTransform: 'uppercase' }}>
-                        Category
-                      </label>
-                    <div style={{ position: 'relative' }}>
-                      <select
-                        value={category}
-                        onChange={(event) => setCategory(event.target.value)}
-                          style={{
-                            ...FIELD_STYLE,
-                            appearance: 'none',
-                            WebkitAppearance: 'none',
-                            MozAppearance: 'none',
-                            paddingRight: 44,
-                          }}
-                        >
-                          {currentCategories.map((item) => (
-                            <option key={item} value={item}>
-                              {item}
-                            </option>
-                          ))}
-                        </select>
-                        <div
-                          style={{
-                            position: 'absolute',
-                            top: '50%',
-                            right: 14,
-                            transform: 'translateY(-50%)',
-                            pointerEvents: 'none',
-                            color: COLORS.textSecondary,
-                          }}
-                        >
-                          <ChevronDownIcon size={18} />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      <label style={{ fontSize: 11, fontWeight: 700, color: COLORS.textSecondary, textTransform: 'uppercase' }}>
-                        Description
-                      </label>
-                      <textarea
-                        value={description}
-                        onChange={(event) => setDescription(event.target.value)}
-                        rows={5}
-                        placeholder="Describe the idea, tools, and experience."
-                        style={{
-                          ...FIELD_STYLE,
-                          minHeight: 120,
-                          resize: 'vertical',
-                        }}
-                      />
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      <label style={{ fontSize: 11, fontWeight: 700, color: COLORS.textSecondary, textTransform: 'uppercase' }}>
-                        Tags
-                      </label>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                        {tags.map((tag) => (
-                          <Chip key={tag} value={`#${tag}`} onRemove={() => setTags((prev) => prev.filter((item) => item !== tag))} tone="accent" />
-                        ))}
-                      </div>
-                      <div style={{ display: 'flex', gap: 10 }}>
-                        <input
-                          type="text"
-                          value={tagInput}
-                          onChange={(event) => setTagInput(event.target.value)}
-                          onKeyDown={(event) => {
-                            if (event.key === 'Enter' || event.key === ',') {
-                              event.preventDefault()
-                              addTag()
-                            }
-                          }}
-                          placeholder="Add a tag"
-                          style={{ ...FIELD_STYLE, flex: 1, minHeight: 48 }}
-                        />
-                        <button
-                          type="button"
-                          onClick={addTag}
-                          style={{
-                            minWidth: 96,
-                            borderRadius: 14,
-                            border: 'none',
-                            background: COLORS.accent,
-                            color: COLORS.text,
-                            fontWeight: 800,
-                            cursor: 'pointer',
-                          }}
-                        >
-                          Add
-                        </button>
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      <label style={{ fontSize: 11, fontWeight: 700, color: COLORS.textSecondary, textTransform: 'uppercase' }}>
-                        Software Used
-                      </label>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                        {software.map((item) => (
-                          <Chip key={item} value={item} onRemove={() => setSoftware((prev) => prev.filter((tool) => tool !== item))} />
-                        ))}
-                      </div>
-                      <div style={{ display: 'flex', gap: 10 }}>
-                        <input
-                          type="text"
-                          list="software-suggestions"
-                          value={softwareInput}
-                          onChange={(event) => setSoftwareInput(event.target.value)}
-                          onKeyDown={(event) => {
-                            if (event.key === 'Enter' || event.key === ',') {
-                              event.preventDefault()
-                              addSoftware()
-                            }
-                          }}
-                          placeholder="Add software"
-                          style={{ ...FIELD_STYLE, flex: 1, minHeight: 48 }}
-                        />
-                        <button
-                          type="button"
-                          onClick={addSoftware}
-                          style={{
-                            minWidth: 96,
-                            borderRadius: 14,
-                            border: 'none',
-                            background: 'rgba(255,255,255,0.08)',
-                            color: COLORS.text,
-                            fontWeight: 800,
-                            cursor: 'pointer',
-                          }}
-                        >
-                          Add
-                        </button>
-                      </div>
-                      <datalist id="software-suggestions">
-                        {SOFTWARE_SUGGESTIONS.map((item) => (
-                          <option key={item} value={item} />
-                        ))}
-                      </datalist>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      <label style={{ fontSize: 11, fontWeight: 700, color: COLORS.textSecondary, textTransform: 'uppercase' }}>
-                        Visibility
-                      </label>
-                      <div style={{ display: 'flex', gap: 10 }}>
-                        {['public', 'private'].map((item) => {
-                          const selected = visibility === item
-                          return (
-                            <button
-                              key={item}
-                              type="button"
-                              onClick={() => setVisibility(item)}
-                              style={{
-                                flex: 1,
-                                minHeight: 48,
-                                borderRadius: 14,
-                                border: `1px solid ${selected ? 'rgba(255,122,89,0.42)' : COLORS.border}`,
-                                background: selected ? 'rgba(255,122,89,0.12)' : 'rgba(15,23,42,0.72)',
-                                color: COLORS.text,
-                                fontSize: 14,
-                                fontWeight: 700,
-                                cursor: 'pointer',
-                              }}
-                            >
-                              {item === 'public' ? 'Public' : 'Private'}
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-
-                {currentStep === 4 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-                    <div
-                      style={{
-                        borderRadius: 22,
-                        overflow: 'hidden',
-                        border: `1px solid ${COLORS.border}`,
-                        background: 'rgba(18,22,32,0.92)',
-                      }}
-                    >
-                      {projectType === '3d' && selectedMainFile?.file && mainPreviewUrl ? (
-                        <GltfAssetViewer
-                          modelUrl={mainPreviewUrl}
-                          title={projectTitle || '3D Preview'}
-                          mode={mode}
-                          background="#101820"
-                        />
-                      ) : projectType === '2d' && displayPreviewUrl ? (
-                        <img
-                          src={displayPreviewUrl}
-                          alt="Project preview"
-                          style={{ width: '100%', aspectRatio: mode === 'portrait' ? '3 / 4' : '16 / 10', objectFit: 'cover', display: 'block' }}
-                        />
-                      ) : (
-                        <div
-                          style={{
-                            minHeight: 220,
-                            padding: 20,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'space-between',
-                            gap: 12,
-                            background: 'linear-gradient(180deg, rgba(255,122,89,0.16), rgba(18,22,32,1))',
-                          }}
-                        >
-                          <div>
-                            <div style={{ fontSize: 12, fontWeight: 800, color: COLORS.accent, marginBottom: 8 }}>
-                              WebGL project bundle
-                            </div>
-                            <h3 style={{ margin: '0 0 10px', fontSize: 22, fontWeight: 800, letterSpacing: -0.4 }}>
-                              {projectTitle || 'Untitled game'}
-                            </h3>
-                            <p style={{ margin: 0, fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.5 }}>
-                              This bundle will run in-app after publishing. Make sure the folder contains `index.html`
-                              and all of the build files the HTML references.
-                            </p>
-                          </div>
-
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                            {selectedMainFile ? (
-                              <Chip value={`Main file: ${selectedMainFile.relativePath}`} tone="accent" />
-                            ) : null}
-                            <Chip value={`${assetFiles.length} uploaded file(s)`} />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                      <div style={{ padding: 14, borderRadius: 18, background: 'rgba(18,22,32,0.92)', border: `1px solid ${COLORS.border}` }}>
-                        <div style={{ fontSize: 12, color: COLORS.textSecondary, marginBottom: 6 }}>Type</div>
-                        <div style={{ fontSize: 15, fontWeight: 800 }}>{activeTypeMeta.label}</div>
-                      </div>
-                      <div style={{ padding: 14, borderRadius: 18, background: 'rgba(18,22,32,0.92)', border: `1px solid ${COLORS.border}` }}>
-                        <div style={{ fontSize: 12, color: COLORS.textSecondary, marginBottom: 6 }}>Visibility</div>
-                        <div style={{ fontSize: 15, fontWeight: 800 }}>{visibility === 'public' ? 'Public' : 'Private'}</div>
-                      </div>
-                      <div style={{ padding: 14, borderRadius: 18, background: 'rgba(18,22,32,0.92)', border: `1px solid ${COLORS.border}` }}>
-                        <div style={{ fontSize: 12, color: COLORS.textSecondary, marginBottom: 6 }}>Assets</div>
-                        <div style={{ fontSize: 15, fontWeight: 800 }}>{assetFiles.length} files</div>
-                      </div>
-                      <div style={{ padding: 14, borderRadius: 18, background: 'rgba(18,22,32,0.92)', border: `1px solid ${COLORS.border}` }}>
-                        <div style={{ fontSize: 12, color: COLORS.textSecondary, marginBottom: 6 }}>Total Size</div>
-                        <div style={{ fontSize: 15, fontWeight: 800 }}>{formatBytes(totalUploadSize)}</div>
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-              </>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 18, alignItems: 'center', textAlign: 'center' }}>
-                <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(34,211,238,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(34,211,238,0.22)' }}>
-                  <CheckIcon size={28} />
-                </div>
-                <div>
-                  <h2 style={{ fontSize: 24, fontWeight: 900, margin: '0 0 8px', letterSpacing: -0.5 }}>
-                    Project published
+                {/* Card header */}
+                <div style={{ padding: '24px 22px 20px', borderBottom: `1px solid ${C.border}` }}>
+                  <h2 style={{ margin: '0 0 5px', fontSize: 19, fontWeight: 600, letterSpacing: '-0.01em' }}>
+                    {step === 1 && 'What are you creating?'}
+                    {step === 2 && 'Upload your assets'}
+                    {step === 3 && 'Project details'}
+                    {step === 4 && 'Review & Preview'}
                   </h2>
-                  <p style={{ margin: 0, color: COLORS.textSecondary, lineHeight: 1.5 }}>
-                    Your project is now live in the feed and ready to be opened from the home screen.
+                  <p style={{ margin: 0, fontSize: 13.5, color: C.sub, lineHeight: 1.5 }}>
+                    {step === 1 && 'Select the format that best describes your project.'}
+                    {step === 2 && FILE_HINTS[type]}
+                    {step === 3 && 'Add metadata so others can find and understand your work.'}
+                    {step === 4 && 'Verify everything looks right before publishing.'}
                   </p>
                 </div>
 
-                <div style={{ width: '100%', padding: 16, borderRadius: 20, border: `1px solid ${COLORS.border}`, background: 'rgba(18,22,32,0.92)', textAlign: 'left' }}>
-                  <div style={{ fontSize: 12, color: COLORS.textSecondary, marginBottom: 6 }}>Published Project</div>
-                  <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>{publishedProject?.title || projectTitle}</div>
-                  <div style={{ fontSize: 13, color: COLORS.textSecondary }}>{publishedProject?.type || projectType}</div>
+                {/* Card body */}
+                <div style={{ padding: '22px 22px 26px' }}>
+
+                  {/* ── STEP 1: TYPE SELECTION ── */}
+                  {step === 1 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+
+                      {/* Type cards */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {TYPE_OPTIONS.map(opt => {
+                          const sel = opt.value === type
+                          return (
+                            <div
+                              key={opt.value}
+                              role="button"
+                              tabIndex={0}
+                              onClick={() => selectType(opt.value)}
+                              onKeyDown={e => e.key === 'Enter' && selectType(opt.value)}
+                              style={{
+                                padding: '15px 18px',
+                                borderRadius: 12,
+                                border: `1px solid ${sel ? C.accentBorder : C.border}`,
+                                background: sel ? C.accentDim : C.card,
+                                display: 'flex', alignItems: 'center',
+                                justifyContent: 'space-between',
+                                cursor: 'pointer',
+                                transition: 'border-color 0.15s, background 0.15s, transform 0.12s',
+                                userSelect: 'none',
+                              }}
+                              onMouseEnter={e => {
+                                if (!sel) {
+                                  e.currentTarget.style.borderColor = C.borderHover
+                                  e.currentTarget.style.background = C.cardHover
+                                }
+                              }}
+                              onMouseLeave={e => {
+                                if (!sel) {
+                                  e.currentTarget.style.borderColor = C.border
+                                  e.currentTarget.style.background = C.card
+                                }
+                              }}
+                              onMouseDown={e => { e.currentTarget.style.transform = 'scale(0.985)' }}
+                              onMouseUp={e => { e.currentTarget.style.transform = 'none' }}
+                            >
+                              {/* Left: icon + text */}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                                {/* Icon box */}
+                                <div style={{
+                                  width: 46, height: 46, borderRadius: 10, flexShrink: 0,
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  background: sel ? 'rgba(255,122,69,0.15)' : 'rgba(255,255,255,0.04)',
+                                  border: `1px solid ${sel ? 'rgba(255,122,69,0.3)' : 'rgba(255,255,255,0.06)'}`,
+                                  color: sel ? C.accent : C.sub,
+                                  transition: 'all 0.15s',
+                                }}>
+                                  <opt.Icon size={20} color="currentColor" />
+                                </div>
+                                <div>
+                                  <div style={{ fontSize: 15, fontWeight: 500, color: C.text, marginBottom: 2, lineHeight: 1 }}>
+                                    {opt.label}
+                                  </div>
+                                  <div style={{ fontSize: 12.5, color: C.sub, lineHeight: 1.4 }}>
+                                    {opt.description}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Right: radio */}
+                              <div style={{
+                                width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
+                                border: `1.5px solid ${sel ? C.accent : 'rgba(255,255,255,0.15)'}`,
+                                background: sel ? C.accent : 'transparent',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                transition: 'all 0.15s',
+                              }}>
+                                {sel && <CheckIcon size={11} color="#fff" weight="3" />}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+
+                      {/* Orientation segmented control */}
+                      <div>
+                        <FormLabel>Orientation</FormLabel>
+                        <div style={{
+                          position: 'relative', display: 'flex',
+                          background: C.card, border: `1px solid ${C.border}`,
+                          borderRadius: 10, padding: 3, height: 42,
+                        }}>
+                          {/* Sliding thumb */}
+                          <div style={{
+                            position: 'absolute',
+                            top: 3, bottom: 3,
+                            left: mode === 'portrait' ? 3 : 'calc(50% + 1.5px)',
+                            width: 'calc(50% - 4.5px)',
+                            background: C.bg,
+                            border: `1px solid rgba(255,255,255,0.1)`,
+                            borderRadius: 7,
+                            zIndex: 1,
+                            transition: 'left 0.22s cubic-bezier(0.4,0,0.2,1)',
+                            pointerEvents: 'none',
+                          }} />
+                          {['portrait', 'landscape'].map(v => (
+                            <button
+                              key={v} type="button"
+                              onClick={() => setMode(v)}
+                              style={{
+                                flex: 1, border: 'none', background: 'transparent',
+                                color: mode === v ? C.text : C.muted,
+                                fontSize: 13, fontWeight: mode === v ? 500 : 400,
+                                cursor: 'pointer', zIndex: 2, position: 'relative',
+                                transition: 'color 0.2s',
+                              }}
+                            >
+                              {v === 'portrait' ? 'Portrait' : 'Landscape'}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── STEP 2: ASSETS ── */}
+                  {step === 2 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+                      {/* Main files upload zone */}
+                      <div style={{
+                        borderRadius: 12,
+                        border: `1px solid ${C.border}`,
+                        background: C.card,
+                        overflow: 'hidden',
+                      }}>
+                        <div style={{
+                          padding: '16px 18px',
+                          borderBottom: `1px solid ${C.border}`,
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+                        }}>
+                          <div>
+                            <div style={{ fontSize: 14, fontWeight: 500, color: C.text, marginBottom: 2 }}>
+                              Main assets
+                            </div>
+                            <div style={{ fontSize: 12.5, color: C.sub, lineHeight: 1.4 }}>
+                              {type === 'game' ? 'Build folder with index.html' : type === '3d' ? '.glb / .gltf + textures' : 'Primary image file'}
+                            </div>
+                          </div>
+                          <label style={{
+                            padding: '8px 14px', borderRadius: 8, cursor: 'pointer',
+                            background: 'rgba(255,122,69,0.1)', border: `1px solid ${C.accentBorder}`,
+                            color: C.accent, fontSize: 12.5, fontWeight: 500,
+                            display: 'inline-flex', alignItems: 'center', gap: 6,
+                            whiteSpace: 'nowrap', flexShrink: 0, transition: 'all 0.15s',
+                          }}
+                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,122,69,0.18)'}
+                            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,122,69,0.1)'}
+                          >
+                            <UploadCloudIcon size={15} color="currentColor" />
+                            Choose Files
+                            <input
+                              type="file" style={{ display: 'none' }}
+                              multiple
+                              accept={
+                                type === 'game' ? '.html,.htm,.js,.json,.wasm,.data,.css,.png,.jpg,.jpeg,.webp,.mp3,.ogg'
+                                : type === '3d'  ? '.glb,.gltf,.bin,.png,.jpg,.jpeg,.webp'
+                                : '.png,.jpg,.jpeg,.webp,.gif,.avif'
+                              }
+                              {...(type === 'game' ? { webkitdirectory: '', directory: '' } : {})}
+                              onChange={handleAssets}
+                            />
+                          </label>
+                        </div>
+
+                        {/* File list */}
+                        <div style={{ padding: '14px 18px', minHeight: 52 }}>
+                          {assets.length > 0 ? (
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                              {assets.map(item => (
+                                <Tag
+                                  key={item.relativePath}
+                                  value={`${item.relativePath} (${formatBytes(item.file.size)})`}
+                                  onRemove={() => setAssets(p => p.filter(i => i.relativePath !== item.relativePath))}
+                                  accent={item === mainFile}
+                                />
+                              ))}
+                            </div>
+                          ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '18px 0', gap: 8 }}>
+                              <UploadCloudIcon size={26} color={C.muted} />
+                              <span style={{ fontSize: 13, color: C.muted }}>No files selected yet</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* File stats footer */}
+                        <div style={{
+                          padding: '10px 18px',
+                          borderTop: `1px solid ${C.border}`,
+                          display: 'flex', justifyContent: 'space-between',
+                          fontSize: 12, color: C.sub,
+                        }}>
+                          <span>{assets.length} file{assets.length !== 1 ? 's' : ''} selected</span>
+                          <span>Total: {formatBytes(totalSize)}</span>
+                        </div>
+                      </div>
+
+                      {/* Cover image upload */}
+                      <div style={{
+                        borderRadius: 12,
+                        border: `1px solid ${C.border}`,
+                        background: C.card,
+                        overflow: 'hidden',
+                      }}>
+                        <div style={{
+                          padding: '16px 18px',
+                          borderBottom: `1px solid ${C.border}`,
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+                        }}>
+                          <div>
+                            <div style={{ fontSize: 14, fontWeight: 500, color: C.text, marginBottom: 2 }}>
+                              Cover thumbnail
+                            </div>
+                            <div style={{ fontSize: 12.5, color: C.sub }}>
+                              Optional — recommended for games and 3D.
+                            </div>
+                          </div>
+                          <label style={{
+                            padding: '8px 14px', borderRadius: 8, cursor: 'pointer',
+                            background: 'rgba(255,255,255,0.04)', border: `1px solid ${C.border}`,
+                            color: C.sub, fontSize: 12.5, fontWeight: 500,
+                            display: 'inline-flex', alignItems: 'center', gap: 6,
+                            whiteSpace: 'nowrap', flexShrink: 0, transition: 'all 0.15s',
+                          }}
+                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.09)'; e.currentTarget.style.color = C.text }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = C.sub }}
+                          >
+                            <ImagePlusIcon size={15} color="currentColor" />
+                            Choose Cover
+                            <input
+                              type="file" style={{ display: 'none' }}
+                              accept=".png,.jpg,.jpeg,.webp,.gif,.avif"
+                              onChange={handleCover}
+                            />
+                          </label>
+                        </div>
+                        <div style={{ padding: '14px 18px' }}>
+                          {cover ? (
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+                              <Tag value={`${cover.relativePath} (${formatBytes(cover.file.size)})`} accent />
+                              <button
+                                type="button" onClick={() => setCover(null)}
+                                style={{
+                                  background: 'none', border: 'none', cursor: 'pointer',
+                                  color: C.muted, fontSize: 12, padding: 0, transition: 'color 0.15s',
+                                }}
+                                onMouseEnter={e => e.currentTarget.style.color = C.text}
+                                onMouseLeave={e => e.currentTarget.style.color = C.muted}
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ) : (
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px 0', gap: 6 }}>
+                              <ImagePlusIcon size={24} color={C.muted} />
+                              <span style={{ fontSize: 13, color: C.muted }}>No cover selected</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── STEP 3: PROJECT INFO ── */}
+                  {step === 3 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+
+                      {/* Title */}
+                      <div>
+                        <FormLabel>Project Title *</FormLabel>
+                        <input
+                          type="text"
+                          value={title}
+                          onChange={e => setTitle(e.target.value)}
+                          placeholder="e.g. Neon Cube Composition"
+                          style={{ ...fieldBase, ...focusStyle('title') }}
+                          onFocus={() => setFocused('title')}
+                          onBlur={() => setFocused('')}
+                        />
+                      </div>
+
+                      {/* Category + Visibility side by side */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                        <div>
+                          <FormLabel>Category *</FormLabel>
+                          <div style={{ position: 'relative' }}>
+                            <select
+                              value={category}
+                              onChange={e => setCategory(e.target.value)}
+                              style={{
+                                ...fieldBase, ...focusStyle('cat'),
+                                appearance: 'none', WebkitAppearance: 'none',
+                                paddingRight: 38, cursor: 'pointer',
+                              }}
+                              onFocus={() => setFocused('cat')}
+                              onBlur={() => setFocused('')}
+                            >
+                              {cats.map(c => (
+                                <option key={c} value={c} style={{ background: '#1A2030' }}>{c}</option>
+                              ))}
+                            </select>
+                            <div style={{
+                              position: 'absolute', top: '50%', right: 12,
+                              transform: 'translateY(-50%)', pointerEvents: 'none',
+                              color: C.sub, display: 'flex',
+                            }}>
+                              <ChevronDownIcon size={15} />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <FormLabel>Visibility</FormLabel>
+                          <div style={{ display: 'flex', height: 47, gap: 0, borderRadius: 10, overflow: 'hidden', border: `1px solid ${C.border}` }}>
+                            {[
+                              { value: 'public',  label: 'Public',  Icon: GlobeIcon2 },
+                              { value: 'private', label: 'Private', Icon: LockIcon2 },
+                            ].map(({ value, label, Icon }) => {
+                              const sel = visibility === value
+                              return (
+                                <button
+                                  key={value} type="button"
+                                  onClick={() => setVis(value)}
+                                  style={{
+                                    flex: 1, border: 'none',
+                                    background: sel ? C.accentDim : C.card,
+                                    color: sel ? C.accent : C.sub,
+                                    fontSize: 12.5, fontWeight: sel ? 500 : 400,
+                                    cursor: 'pointer', display: 'flex',
+                                    alignItems: 'center', justifyContent: 'center', gap: 5,
+                                    transition: 'all 0.15s',
+                                    borderRight: value === 'public' ? `1px solid ${C.border}` : 'none',
+                                  }}
+                                >
+                                  <Icon size={13} color="currentColor" />
+                                  {label}
+                                </button>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Description */}
+                      <div>
+                        <FormLabel>Description</FormLabel>
+                        <textarea
+                          value={desc}
+                          onChange={e => setDesc(e.target.value)}
+                          rows={4}
+                          placeholder="Describe the concept, tools, and experience behind this project."
+                          style={{
+                            ...fieldBase, ...focusStyle('desc'),
+                            minHeight: 110, resize: 'none',
+                          }}
+                          onFocus={() => setFocused('desc')}
+                          onBlur={() => setFocused('')}
+                        />
+                      </div>
+
+                      {/* Tags */}
+                      <div>
+                        <FormLabel>Tags</FormLabel>
+                        {tags.length > 0 && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+                            {tags.map(t => (
+                              <Tag key={t} value={`#${t}`} accent
+                                onRemove={() => setTags(p => p.filter(x => x !== t))} />
+                            ))}
+                          </div>
+                        )}
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <input
+                            type="text" value={tagInput}
+                            onChange={e => setTagInput(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTag() } }}
+                            placeholder="Type and press Enter"
+                            style={{ ...fieldBase, ...focusStyle('tag'), flex: 1, minHeight: 44, padding: '10px 14px' }}
+                            onFocus={() => setFocused('tag')}
+                            onBlur={() => setFocused('')}
+                          />
+                          <button type="button" onClick={addTag} style={{
+                            padding: '0 16px', height: 44, borderRadius: 10,
+                            background: C.accentDim, border: `1px solid ${C.accentBorder}`,
+                            color: C.accent, fontWeight: 500, fontSize: 13.5,
+                            cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0,
+                          }}
+                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,122,69,0.2)'}
+                            onMouseLeave={e => e.currentTarget.style.background = C.accentDim}
+                          >
+                            Add
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Software */}
+                      <div>
+                        <FormLabel>Software Used</FormLabel>
+                        {software.length > 0 && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+                            {software.map(s => (
+                              <Tag key={s} value={s}
+                                onRemove={() => setSoftware(p => p.filter(x => x !== s))} />
+                            ))}
+                          </div>
+                        )}
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <input
+                            type="text" list="sw-list" value={swInput}
+                            onChange={e => setSwInput(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addSw() } }}
+                            placeholder="Blender, Unity, Maya…"
+                            style={{ ...fieldBase, ...focusStyle('sw'), flex: 1, minHeight: 44, padding: '10px 14px' }}
+                            onFocus={() => setFocused('sw')}
+                            onBlur={() => setFocused('')}
+                          />
+                          <button type="button" onClick={addSw} style={{
+                            padding: '0 16px', height: 44, borderRadius: 10,
+                            background: 'rgba(255,255,255,0.04)', border: `1px solid ${C.border}`,
+                            color: C.sub, fontWeight: 500, fontSize: 13.5,
+                            cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0,
+                          }}
+                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.09)'; e.currentTarget.style.color = C.text }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = C.sub }}
+                          >
+                            Add
+                          </button>
+                        </div>
+                        <datalist id="sw-list">
+                          {SOFTWARE_SUGGESTIONS.map(s => <option key={s} value={s} />)}
+                        </datalist>
+                      </div>
+
+                    </div>
+                  )}
+
+                  {/* ── STEP 4: PREVIEW ── */}
+                  {step === 4 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+                      {/* Preview area */}
+                      <div style={{
+                        borderRadius: 12, overflow: 'hidden',
+                        border: `1px solid ${C.border}`,
+                        background: '#0F131A',
+                      }}>
+                        {type === '3d' && mainFile?.file && mainUrl ? (
+                          <GltfAssetViewer modelUrl={mainUrl} title={title || '3D Preview'} mode={mode} background="#0F131A" />
+                        ) : type === '2d' && previewUrl ? (
+                          <img src={previewUrl} alt="Preview"
+                            style={{ width: '100%', aspectRatio: mode === 'portrait' ? '3/4' : '16/10', objectFit: 'cover', display: 'block' }} />
+                        ) : (
+                          <div style={{
+                            minHeight: 160, padding: 22,
+                            display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 14,
+                            background: 'linear-gradient(160deg, rgba(255,122,69,0.07) 0%, transparent 60%)',
+                          }}>
+                            <div>
+                              <div style={{ fontSize: 10.5, fontWeight: 600, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>
+                                WebGL Bundle
+                              </div>
+                              <h3 style={{ margin: '0 0 8px', fontSize: 18, fontWeight: 600, letterSpacing: '-0.01em' }}>
+                                {title || 'Untitled Game'}
+                              </h3>
+                              <p style={{ margin: 0, fontSize: 13, color: C.sub, lineHeight: 1.5 }}>
+                                Runs interactively in the web feed after publishing.
+                              </p>
+                            </div>
+                            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                              {mainFile && <Tag value={`Entry: ${mainFile.relativePath}`} accent />}
+                              <Tag value={`${assets.length} file${assets.length !== 1 ? 's' : ''}`} />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Meta grid */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                        {[
+                          { label: 'Type',       value: activeMeta.label },
+                          { label: 'Visibility', value: visibility === 'public' ? 'Public' : 'Private' },
+                          { label: 'Files',      value: `${assets.length} files` },
+                          { label: 'Total Size', value: formatBytes(totalSize) },
+                        ].map(({ label, value }) => (
+                          <div key={label} style={{
+                            padding: '13px 15px', borderRadius: 10,
+                            background: C.card, border: `1px solid ${C.border}`,
+                          }}>
+                            <div style={{ fontSize: 10.5, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 5 }}>
+                              {label}
+                            </div>
+                            <div style={{ fontSize: 14, fontWeight: 500, color: C.text }}>{value}</div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Summary row */}
+                      {(title || category) && (
+                        <div style={{
+                          padding: '13px 15px', borderRadius: 10,
+                          background: C.card, border: `1px solid ${C.border}`,
+                          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                        }}>
+                          <div>
+                            <div style={{ fontSize: 14.5, fontWeight: 500, color: C.text, marginBottom: 2 }}>{title}</div>
+                            <div style={{ fontSize: 12.5, color: C.sub }}>{category} · {mode}</div>
+                          </div>
+                          {tags.length > 0 && (
+                            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                              {tags.slice(0, 2).map(t => <Tag key={t} value={`#${t}`} accent />)}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                </div>
+              </>
+
+            ) : (
+              /* ── STEP 5: SUCCESS ── */
+              <div style={{
+                padding: '40px 24px 36px',
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                textAlign: 'center', gap: 20,
+              }}>
+                <div style={{
+                  width: 64, height: 64, borderRadius: '50%',
+                  background: C.successDim,
+                  border: `1px solid ${C.success}30`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <CheckIcon size={26} color={C.success} weight="2.5" />
+                </div>
+                <div>
+                  <h2 style={{ margin: '0 0 8px', fontSize: 22, fontWeight: 600, letterSpacing: '-0.02em' }}>
+                    Project published!
+                  </h2>
+                  <p style={{ margin: 0, fontSize: 14, color: C.sub, lineHeight: 1.55 }}>
+                    Your project is live in the feed and ready to be viewed or played.
+                  </p>
+                </div>
+                <div style={{
+                  width: '100%', padding: '15px 18px', borderRadius: 12,
+                  border: `1px solid ${C.border}`, background: C.card, textAlign: 'left',
+                }}>
+                  <div style={{ fontSize: 11, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 6 }}>
+                    Published
+                  </div>
+                  <div style={{ fontSize: 16, fontWeight: 500, color: C.text, marginBottom: 3 }}>
+                    {published?.title || title}
+                  </div>
+                  <div style={{ fontSize: 13, color: C.accent, textTransform: 'capitalize' }}>
+                    {published?.type || type}
+                  </div>
                 </div>
               </div>
             )}
           </div>
+
+          {/* Spacer so footer doesn't cover content */}
+          <div style={{ height: 100 }} />
         </div>
 
-        <div
-          style={{
-            position: 'sticky',
-            bottom: 0,
-            zIndex: 2,
-            padding: '14px 16px calc(env(safe-area-inset-bottom, 0px) + 16px)',
-            background: 'linear-gradient(180deg, rgba(11,13,18,0) 0%, rgba(11,13,18,0.88) 28%, rgba(11,13,18,1) 100%)',
-          }}
-        >
-          <div style={{ display: 'flex', gap: 12 }}>
-            <button
-              type="button"
-              className="btn btn--ghost"
+        {/* ── STICKY FOOTER ── */}
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 2,
+          padding: '14px 16px calc(env(safe-area-inset-bottom,0px) + 18px)',
+          background: 'linear-gradient(to bottom, transparent 0%, rgba(13,17,23,0.97) 30%, #0D1117 100%)',
+        }}>
+          <div style={{ display: 'flex', gap: 10 }}>
+
+            {/* Back button */}
+            <button type="button" onClick={handleBack}
               style={{
-                flex: 1,
-                height: 56,
-                borderRadius: 20,
+                flex: 1, height: 50, borderRadius: 16,
                 background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.10)',
-                color: COLORS.text,
-                boxShadow: 'none',
+                border: `1px solid ${C.border}`,
+                color: C.sub, cursor: 'pointer',
+                fontWeight: 500, fontSize: 14,
+                fontFamily: 'inherit',
+                transition: 'all 0.15s',
               }}
-              onClick={handleBack}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = C.text }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = C.sub }}
             >
-              {currentStep === 1 ? 'Back' : 'Back'}
+              Back
             </button>
 
-            {currentStep < 4 ? (
-              <button
-                type="button"
-                className="btn btn--primary"
+            {/* Primary action button */}
+            {step < 4 && (
+              <button type="button" onClick={handleNext} disabled={!canNext}
                 style={{
-                  flex: 1.5,
-                  height: 56,
-                  borderRadius: 20,
-                  background: COLORS.primaryButton,
-                  color: COLORS.primaryButtonText,
-                  boxShadow: '0 14px 30px rgba(0,0,0,0.28)',
-                  opacity: canGoNext ? 1 : 0.7,
+                  flex: 1.6, height: 50, borderRadius: 16,
+                  background: canNext ? C.accent : 'rgba(255,122,69,0.25)',
+                  border: 'none', color: canNext ? '#fff' : 'rgba(255,255,255,0.35)',
+                  fontWeight: 600, fontSize: 14,
+                  fontFamily: 'inherit',
+                  cursor: canNext ? 'pointer' : 'not-allowed',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  transition: 'all 0.15s',
+                  letterSpacing: '-0.01em',
                 }}
-                onClick={handleNext}
-                disabled={!canGoNext}
+                onMouseEnter={e => { if (canNext) e.currentTarget.style.filter = 'brightness(1.08)' }}
+                onMouseLeave={e => { e.currentTarget.style.filter = 'none' }}
+                onMouseDown={e => { if (canNext) e.currentTarget.style.transform = 'scale(0.97)' }}
+                onMouseUp={e => { e.currentTarget.style.transform = 'none' }}
               >
-                Next
-                <ArrowRightIcon size={18} />
+                Continue <ArrowRightIcon size={16} />
               </button>
-            ) : currentStep === 4 ? (
-              <button
-                type="button"
-                className="btn btn--primary"
+            )}
+
+            {step === 4 && (
+              <button type="button" onClick={handlePublish} disabled={publishing}
                 style={{
-                  flex: 1.5,
-                  height: 56,
-                  borderRadius: 20,
-                  background: COLORS.primaryButton,
-                  color: COLORS.primaryButtonText,
-                  boxShadow: '0 14px 30px rgba(0,0,0,0.28)',
-                  opacity: isPublishing ? 0.7 : 1,
+                  flex: 1.6, height: 50, borderRadius: 16,
+                  background: publishing ? 'rgba(255,122,69,0.4)' : C.accent,
+                  border: 'none', color: '#fff',
+                  fontWeight: 600, fontSize: 14,
+                  fontFamily: 'inherit',
+                  cursor: publishing ? 'not-allowed' : 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  transition: 'all 0.15s',
+                  letterSpacing: '-0.01em',
                 }}
-                onClick={handlePublish}
-                disabled={isPublishing}
+                onMouseEnter={e => { if (!publishing) e.currentTarget.style.filter = 'brightness(1.08)' }}
+                onMouseLeave={e => { e.currentTarget.style.filter = 'none' }}
               >
-                {isPublishing ? 'Publishing...' : 'Publish Project'}
-                <ArrowRightIcon size={18} />
+                {publishing ? 'Publishing…' : 'Publish Project'}
+                {!publishing && <ArrowRightIcon size={16} />}
               </button>
-            ) : (
-              <button
-                type="button"
-                className="btn btn--primary"
+            )}
+
+            {step === 5 && (
+              <button type="button" onClick={() => navigate('/app/home')}
                 style={{
-                  flex: 1.5,
-                  height: 56,
-                  borderRadius: 20,
-                  background: COLORS.primaryButton,
-                  color: COLORS.primaryButtonText,
-                  boxShadow: '0 14px 30px rgba(0,0,0,0.28)',
+                  flex: 1.6, height: 50, borderRadius: 16,
+                  background: C.accent, border: 'none', color: '#fff',
+                  fontWeight: 600, fontSize: 14,
+                  fontFamily: 'inherit',
+                  cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  transition: 'all 0.15s',
                 }}
-                onClick={() => navigate('/app/home')}
+                onMouseEnter={e => e.currentTarget.style.filter = 'brightness(1.08)'}
+                onMouseLeave={e => e.currentTarget.style.filter = 'none'}
               >
-                Go to Feed
-                <ArrowRightIcon size={18} />
+                Go to Feed <ArrowRightIcon size={16} />
               </button>
             )}
           </div>
         </div>
       </div>
 
-      {toast ? (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 112,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            background: 'rgba(34, 211, 238, 0.96)',
-            color: '#0B0D12',
-            padding: '12px 20px',
-            borderRadius: 100,
-            fontSize: 13,
-            fontWeight: 700,
-            zIndex: 1100,
-            boxShadow: '0 8px 24px rgba(34, 211, 238, 0.3)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-          }}
-        >
-          <span style={{ fontSize: 15 }}>OK</span>
-          Sign in to {toast.action} on CreativeVerse.
-          <button
-            type="button"
-            onClick={() => navigate('/signin')}
-            style={{
-              marginLeft: 8,
-              border: 'none',
-              background: 'rgba(11,13,18,0.1)',
-              color: '#0B0D12',
-              fontWeight: 800,
-              borderRadius: 999,
-              padding: '6px 10px',
-              cursor: 'pointer',
-            }}
-          >
+      {/* Toast */}
+      {toast && (
+        <div style={{
+          position: 'absolute', bottom: 110, left: '50%', transform: 'translateX(-50%)',
+          background: '#1A2030', border: `1px solid ${C.border}`,
+          color: C.text, padding: '12px 18px', borderRadius: 100,
+          fontSize: 13, fontWeight: 500, zIndex: 1100,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+          display: 'flex', alignItems: 'center', gap: 10, whiteSpace: 'nowrap',
+        }}>
+          Sign in to {toast.action}.
+          <button type="button" onClick={() => navigate('/signin')} style={{
+            border: 'none', background: C.accent, color: '#fff',
+            fontWeight: 600, borderRadius: 999, padding: '5px 12px',
+            cursor: 'pointer', fontSize: 12.5,
+          }}>
             Sign In
           </button>
         </div>
-      ) : null}
+      )}
     </div>
   )
 }
