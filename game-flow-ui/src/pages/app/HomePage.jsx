@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import WebGLGamePlayer from '../../components/WebGLGamePlayer'
 import GltfAssetViewer from '../../components/GltfAssetViewer'
+import { io } from 'socket.io-client'
 import wavingVideo from '../../assets/wave.mp4'
 import logoImg from '../../assets/logo.jpg'
 import {
@@ -302,6 +303,7 @@ function HomePage() {
   const navigate = useNavigate()
   const { isGuest, user, token } = useAuth()
   const [feedState, setFeedState] = useState(initialFeedState)
+  const [socket, setSocket] = useState(null)
   const [activeIdx, setActiveIdx] = useState(0)
   const [expandedProj, setExpandedProj] = useState(null)
   const [commentTarget, setCommentTarget] = useState(null)
@@ -352,6 +354,14 @@ function HomePage() {
   }, [token])
 
   useEffect(() => {
+    // Setup socket connection
+    const newSocket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000')
+    setSocket(newSocket)
+
+    return () => newSocket.close()
+  }, [])
+
+  useEffect(() => {
     const controller = new AbortController()
     Promise.resolve().then(() => loadContent(controller.signal))
 
@@ -386,7 +396,9 @@ function HomePage() {
     }
   }
 
-  const updateItemInState = (targetId, updater) => {
+  const getReelKey = useCallback((reel) => reel.feedKey ?? reel.id, [])
+
+  const updateItemInState = useCallback((targetId, updater) => {
     setFeedState((prev) => ({
       ...prev,
       items: prev.items.map((item) => {
@@ -416,9 +428,46 @@ function HomePage() {
       }
       return updater(prev)
     })
-  }
+  }, [getReelKey])
 
-  const getReelKey = (reel) => reel.feedKey ?? reel.id
+  const syncProjectEngagement = useCallback((postId, engagement) => {
+    if (!postId || !engagement) {
+      return
+    }
+
+    const targetId = `project:${postId}`
+    updateItemInState(targetId, (item) => ({
+      ...item,
+      engagement: {
+        ...(item.engagement ?? {}),
+        ...engagement,
+      },
+    }))
+    setCommentTarget((prev) =>
+      prev?.contentType === 'project' && String(prev.contentId) === String(postId)
+        ? {
+            ...prev,
+            engagement: {
+              ...(prev.engagement ?? {}),
+              ...engagement,
+            },
+          }
+        : prev,
+    )
+  }, [updateItemInState])
+
+  useEffect(() => {
+    if (!socket) return
+
+    socket.on('engagement_update', (data) => {
+      syncProjectEngagement(data.postId, data.engagement)
+    })
+
+    return () => {
+      socket.off('engagement_update')
+    }
+  }, [socket, syncProjectEngagement])
+
 
   const getCounts = (reel) => {
     const engagement = reel.engagement ?? {}
@@ -478,32 +527,6 @@ function HomePage() {
         ...(updatedContent.engagement ?? {}),
       },
     }))
-  }
-
-  const syncProjectEngagement = (postId, engagement) => {
-    if (!postId || !engagement) {
-      return
-    }
-
-    const targetId = `project:${postId}`
-    updateItemInState(targetId, (item) => ({
-      ...item,
-      engagement: {
-        ...(item.engagement ?? {}),
-        ...engagement,
-      },
-    }))
-    setCommentTarget((prev) =>
-      prev?.contentType === 'project' && String(prev.contentId) === String(postId)
-        ? {
-            ...prev,
-            engagement: {
-              ...(prev.engagement ?? {}),
-              ...engagement,
-            },
-          }
-        : prev,
-    )
   }
 
   const mutateProjectToggle = async (reel, action, requestFn) => {

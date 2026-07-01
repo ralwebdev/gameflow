@@ -2,8 +2,13 @@ import app from './app.js'
 import { connectDatabase, disconnectDatabase } from './config/database.js'
 import env from './config/env.js'
 import { seedDatabase } from './controllers/contentController.js'
+import { createServer } from 'http'
+import { Server } from 'socket.io'
 
 let server
+let io
+
+export { io }
 
 async function startServer() {
   await connectDatabase()
@@ -12,7 +17,32 @@ async function startServer() {
     await seedDatabase()
   }
 
-  server = app.listen(env.port, () => {
+  server = createServer(app)
+
+  io = new Server(server, {
+    cors: {
+      origin: env.clientOrigin,
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
+    }
+  })
+
+  io.on('connection', (socket) => {
+    console.log('A user connected:', socket.id)
+
+    socket.on('join_project', (projectId) => {
+      socket.join(`project_${projectId}`)
+    })
+
+    socket.on('leave_project', (projectId) => {
+      socket.leave(`project_${projectId}`)
+    })
+
+    socket.on('disconnect', () => {
+      console.log('User disconnected:', socket.id)
+    })
+  })
+
+  server.listen(env.port, () => {
     console.log(`GameFlow API listening on http://localhost:${env.port}`)
   })
 }
