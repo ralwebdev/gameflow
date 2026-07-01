@@ -174,11 +174,11 @@ function WebGLGamePlayer({
           aria-label={`Play ${title} in fullscreen`}
         >
           <span className="webgl-game-player__fullscreen-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" focusable="false">
-              <path d="M4 9V4h5v2H6v3H4Zm10-5h6v6h-2V6h-4V4ZM4 20v-6h2v4h3v2H4Zm14-2v-4h2v6h-6v-2h4Z" />
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8 5v14l11-7z" />
             </svg>
           </span>
-          <span className="webgl-game-player__fullscreen-label">Play Fullscreen</span>
+          <span className="webgl-game-player__fullscreen-label">Play Now</span>
         </button>
       )}
       {hasStarted && (
