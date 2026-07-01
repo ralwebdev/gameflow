@@ -971,7 +971,7 @@ function HomePage() {
                   <div className="creator-details">
                     <div className="creator-name-row">
                       <span className="creator-name">{displayCreatorName}</span>
-                      <VerifiedIcon size={12} />
+                      {(!isCurrentUserReel || (user && user.isVerified)) && <VerifiedIcon size={12} />}
                     </div>
                     <span className="creator-discipline">{reel.discipline}</span>
                   </div>

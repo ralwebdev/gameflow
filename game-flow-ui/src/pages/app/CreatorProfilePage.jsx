@@ -246,23 +246,25 @@ const CreatorProfilePage = () => {
                 boxShadow: '0 4px 16px rgba(255, 122, 89, 0.25)',
               }}
             />
-            <div
-              style={{
-                position: 'absolute',
-                bottom: 0,
-                right: 0,
-                width: 22,
-                height: 22,
-                borderRadius: '50%',
-                background: '#FF7A59',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: '2px solid #0B0D12',
-              }}
-            >
-              <VerifiedIcon />
-            </div>
+            {((!user || creatorId !== user.username) || user.isVerified) && (
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  right: 0,
+                  width: 22,
+                  height: 22,
+                  borderRadius: '50%',
+                  background: '#FF7A59',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '2px solid #0B0D12',
+                }}
+              >
+                <VerifiedIcon />
+              </div>
+            )}
           </div>
 
           {/* Profile Identity */}

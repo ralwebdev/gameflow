@@ -20,6 +20,7 @@ function sanitizeUser(user) {
     skills: user.skills,
     avatar: user.avatar,
     banner: user.banner,
+    isVerified: user.isVerified,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   }

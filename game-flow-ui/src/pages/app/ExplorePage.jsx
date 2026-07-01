@@ -7,9 +7,9 @@ import { useAuth } from '../../context/AuthContext';
 const CATEGORIES = ['All', '3D', 'Animation', 'VFX', 'Games', 'Concept'];
 
 const FEATURED_CREATORS = [
-  { id: 1, name: 'zara_neon', role: 'Senior Animator', avatar: 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/19f781f2a-1e76-4c62-8f73-55c5248d45ab.png' },
-  { id: 2, name: 'alex_vfx', role: 'VFX Artist', avatar: 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/19f781f2a-1e76-4c62-8f73-55c5248d45ab.png' },
-  { id: 3, name: 'leo_3d', role: '3D Sculptor', avatar: 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/19f781f2a-1e76-4c62-8f73-55c5248d45ab.png' }
+  { id: 1, name: 'zara_neon', role: 'Senior Animator', avatar: 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/19f781f2a-1e76-4c62-8f73-55c5248d45ab.png', isVerified: true },
+  { id: 2, name: 'alex_vfx', role: 'VFX Artist', avatar: 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/19f781f2a-1e76-4c62-8f73-55c5248d45ab.png', isVerified: true },
+  { id: 3, name: 'leo_3d', role: '3D Sculptor', avatar: 'https://image.qwenlm.ai/public_source/581c980c-93ea-4473-a881-d706c334af84/19f781f2a-1e76-4c62-8f73-55c5248d45ab.png', isVerified: true }
 ];
 
 const TRENDING_PROJECTS = [
@@ -184,7 +184,7 @@ const ExplorePage = () => {
                   />
                   <span style={{ fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 3 }}>
                     {creator.name}
-                    <VerifiedIcon size={11} />
+                    {creator.isVerified && <VerifiedIcon size={11} />}
                   </span>
                   <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', margin: '2px 0 10px', fontWeight: 500 }}>
                     {creator.role}
