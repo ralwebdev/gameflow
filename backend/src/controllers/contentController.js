@@ -9,6 +9,7 @@ import PostEngagement from '../models/PostEngagement.js'
 import Project from '../models/Project.js'
 import { seedAssets, seedGames } from '../data/seedData.js'
 import asyncHandler from '../middlewares/asyncHandler.js'
+import { io } from '../server.js'
 
 const UPLOADS_ROOT = path.join(process.cwd(), 'uploads', 'projects')
 const PUBLIC_UPLOADS_PREFIX = '/api/uploads/projects'
@@ -751,18 +752,16 @@ export const createProject = asyncHandler(async (request, response) => {
 
 export const uploadProjectFile = asyncHandler(async (request, response) => {
   const { projectId } = request.params
-  const fileName = String(request.headers['x-file-name'] || '').trim()
-  const relativePath = String(request.headers['x-relative-path'] || '').trim()
-  const mimeType = String(request.headers['x-mime-type'] || '').trim()
-  const buffer = request.body
+  const file = request.file;
 
-  if (!Buffer.isBuffer(buffer) || buffer.length === 0) {
+  if (!file) {
     throw createError(400, 'Uploaded file content is missing.')
   }
 
-  if (!fileName || !relativePath) {
-    throw createError(400, 'Uploaded files require a file name and relative path.')
-  }
+  const fileName = file.originalname;
+  // We can default relative path to filename for now or receive it from body if needed
+  const relativePath = request.body.relativePath || fileName;
+  const mimeType = file.mimetype;
 
   const project = await Project.findById(projectId)
 
@@ -774,7 +773,16 @@ export const uploadProjectFile = asyncHandler(async (request, response) => {
     throw createError(403, 'You cannot modify this project.')
   }
 
-  const savedFile = await writeProjectFile(project.slug, { name: fileName, relativePath, mimeType }, buffer)
+  const buffer = await fs.readFile(file.path);
+
+  const savedFile = await writeProjectFile(project.slug, { name: fileName, relativePath, mimeType }, buffer);
+
+  // Clean up the temporary file uploaded by multer
+  try {
+     await fs.unlink(file.path);
+  } catch (err) {
+     console.error('Failed to cleanup temp file:', err);
+  }
 
   const existingFiles = Array.isArray(project.uploadedFiles) ? project.uploadedFiles : []
   const nextFiles = [
@@ -964,6 +972,14 @@ export const togglePostLike = asyncHandler(async (request, response) => {
     sharesCount: project?.engagement?.sharesCount || 0,
   })
 
+  // Broadcast the update
+  if (io) {
+    io.emit('engagement_update', {
+      postId: String(project._id),
+      engagement
+    })
+  }
+
   response.json({
     message: record.liked ? 'Post liked.' : 'Post unliked.',
     postId: String(project._id),
@@ -1032,6 +1048,13 @@ export const createPostComment = asyncHandler(async (request, response) => {
     includeComments: true,
     sharesCount: project?.engagement?.sharesCount || 0,
   })
+
+  if (io) {
+    io.emit('engagement_update', {
+      postId: String(project._id),
+      engagement
+    })
+  }
 
   response.status(201).json({
     message: 'Comment added successfully.',

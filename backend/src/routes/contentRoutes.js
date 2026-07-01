@@ -19,6 +19,7 @@ import {
   deleteProject,
 } from '../controllers/contentController.js'
 import { optionalProtect, protect } from '../middlewares/authMiddleware.js'
+import { upload } from '../middlewares/uploadMiddleware.js'
 
 const router = Router()
 
@@ -40,7 +41,7 @@ router.post('/content/:contentType/:contentId/engagement', protect, updateConten
 router.put(
   '/projects/:projectId/files',
   protect,
-  express.raw({ type: 'application/octet-stream', limit: '250mb' }),
+  upload.single('file'),
   uploadProjectFile,
 )
 router.post('/projects/:projectId/publish', protect, publishProject)
