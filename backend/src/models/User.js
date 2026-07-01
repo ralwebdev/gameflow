@@ -63,6 +63,56 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    bio: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    location: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    website: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    creatorType: {
+      type: String,
+      enum: ['Web Developer', 'Game Developer', '2D Artist', '3D Artist'],
+      default: 'Game Developer',
+    },
+    github: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    itchio: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    behance: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    artstation: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    instagram: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    linkedin: {
+      type: String,
+      default: '',
+      trim: true,
+    },
   },
   {
     timestamps: true,

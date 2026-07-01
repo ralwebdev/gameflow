@@ -21,6 +21,16 @@ function sanitizeUser(user) {
     avatar: user.avatar,
     banner: user.banner,
     isVerified: user.isVerified,
+    bio: user.bio || '',
+    location: user.location || '',
+    website: user.website || '',
+    creatorType: user.creatorType || 'Game Developer',
+    github: user.github || '',
+    itchio: user.itchio || '',
+    behance: user.behance || '',
+    artstation: user.artstation || '',
+    instagram: user.instagram || '',
+    linkedin: user.linkedin || '',
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   }
@@ -116,7 +126,10 @@ export const getCurrentUser = asyncHandler(async (request, response) => {
 })
 
 export const updateCurrentUserProfile = asyncHandler(async (request, response) => {
-  const { email, username, name, headline, skills, avatar, banner } = request.body ?? {}
+  const {
+    email, username, name, headline, skills, avatar, banner, bio, location, website,
+    creatorType, github, itchio, behance, artstation, instagram, linkedin
+  } = request.body ?? {}
 
   if (name !== undefined && !String(name).trim()) {
     throw createError(400, 'Name cannot be empty.')
@@ -179,6 +192,16 @@ export const updateCurrentUserProfile = asyncHandler(async (request, response) =
   }
   if (avatar !== undefined) user.avatar = String(avatar)
   if (banner !== undefined) user.banner = String(banner)
+  if (bio !== undefined) user.bio = String(bio).trim()
+  if (location !== undefined) user.location = String(location).trim()
+  if (website !== undefined) user.website = String(website).trim()
+  if (creatorType !== undefined) user.creatorType = String(creatorType).trim()
+  if (github !== undefined) user.github = String(github).trim()
+  if (itchio !== undefined) user.itchio = String(itchio).trim()
+  if (behance !== undefined) user.behance = String(behance).trim()
+  if (artstation !== undefined) user.artstation = String(artstation).trim()
+  if (instagram !== undefined) user.instagram = String(instagram).trim()
+  if (linkedin !== undefined) user.linkedin = String(linkedin).trim()
 
   await user.save()
 

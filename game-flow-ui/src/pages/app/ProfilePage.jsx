@@ -1,6 +1,8 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { FaGithub, FaInstagram, FaLinkedin, FaBehance, FaArtstation } from 'react-icons/fa';
+import { SiItchdotio } from 'react-icons/si';
 import { fetchContent, togglePostLike, updateProject, deleteProject, uploadProjectFile } from '../../lib/content';
 import GuestBanner from '../../components/layout/GuestBanner';
 import GuestToast from '../../components/layout/GuestToast';
@@ -185,6 +187,8 @@ const getEngagement = (item) => item?.engagement ?? {
 };
 
 const fieldStyle = {
+  width: '100%',
+  boxSizing: 'border-box',
   height: 48,
   borderRadius: 12,
   background: 'rgba(15, 23, 42, 0.72)',
@@ -211,6 +215,16 @@ const ProfilePage = () => {
   const [editSkills, setEditSkills] = useState('');
   const [editAvatar, setEditAvatar] = useState('');
   const [editBanner, setEditBanner] = useState('');
+  const [editBio, setEditBio] = useState('');
+  const [editLocation, setEditLocation] = useState('');
+  const [editWebsite, setEditWebsite] = useState('');
+  const [editCreatorType, setEditCreatorType] = useState('Game Developer');
+  const [editGithub, setEditGithub] = useState('');
+  const [editItchio, setEditItchio] = useState('');
+  const [editBehance, setEditBehance] = useState('');
+  const [editArtstation, setEditArtstation] = useState('');
+  const [editInstagram, setEditInstagram] = useState('');
+  const [editLinkedin, setEditLinkedin] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [userProjects, setUserProjects] = useState([]);
   const [isLoadingProjects, setIsLoadingProjects] = useState(false);
@@ -301,6 +315,16 @@ const ProfilePage = () => {
     setEditSkills(user?.skills?.join(', ') || '');
     setEditAvatar(user?.avatar || '');
     setEditBanner(user?.banner || '');
+    setEditBio(user?.bio || '');
+    setEditLocation(user?.location || '');
+    setEditWebsite(user?.website || '');
+    setEditCreatorType(user?.creatorType || 'Game Developer');
+    setEditGithub(user?.github || '');
+    setEditItchio(user?.itchio || '');
+    setEditBehance(user?.behance || '');
+    setEditArtstation(user?.artstation || '');
+    setEditInstagram(user?.instagram || '');
+    setEditLinkedin(user?.linkedin || '');
     setIsEditing(true);
   };
 
@@ -340,6 +364,16 @@ const ProfilePage = () => {
         skills: skillsArray,
         avatar: editAvatar,
         banner: editBanner,
+        bio: editBio,
+        location: editLocation,
+        website: editWebsite,
+        creatorType: editCreatorType,
+        github: editGithub,
+        itchio: editItchio,
+        behance: editBehance,
+        artstation: editArtstation,
+        instagram: editInstagram,
+        linkedin: editLinkedin
       });
 
       setIsEditing(false);
@@ -512,6 +546,9 @@ const ProfilePage = () => {
   const userHeadline = user?.headline || 'Add a headline in Edit Profile.';
   const userAvatar = user?.avatar || AVATAR;
   const userBanner = user?.banner || BANNER;
+  const userLocation = user?.location || '';
+  const userBio = user?.bio || '';
+  const userWebsite = user?.website || '';
   const dynamicSkills = Array.isArray(user?.skills) ? user.skills : [];
   const memberSince = user?.createdAt
     ? new Date(user.createdAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })
@@ -1022,290 +1059,291 @@ const ProfilePage = () => {
       >
         {isGuest && <GuestBanner onSignIn={() => navigate('/signin')} />}
 
-        <div style={{ position: 'relative', width: '100%', height: 180, overflow: 'hidden', flexShrink: 0 }}>
-          <img src={userBanner} alt="banner" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background: 'linear-gradient(180deg, rgba(11, 13, 18, 0.4) 0%, rgba(11, 13, 18, 0.95) 100%)',
-            }}
+        {/* ─── Cover Image ──────────────────────────────────────────────────────── */}
+        <div style={{ position: 'relative', width: '100%', height: 250, flexShrink: 0 }}>
+          <img
+            src={userBanner}
+            alt="cover"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(180deg, rgba(9, 9, 9, 0.3) 0%, rgba(9, 9, 9, 0.95) 100%)'
+          }} />
 
-          <div style={{ position: 'absolute', top: 16, left: 16, right: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          {/* Top Navigation Controls */}
+          <div style={{
+            position: 'absolute',
+            top: 16,
+            left: 16,
+            right: 16,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
             <button
               onClick={() => navigate('/app/home')}
               style={{
-                width: 36,
-                height: 36,
+                width: 38,
+                height: 38,
                 borderRadius: '50%',
-                background: 'rgba(255, 255, 255, 0.08)',
-                border: '1px solid rgba(255, 255, 255, 0.12)',
-                backdropFilter: 'blur(8px)',
-                WebkitBackdropFilter: 'blur(8px)',
+                background: 'rgba(9, 9, 9, 0.6)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#FFFFFF',
                 cursor: 'pointer',
+                color: '#FFFFFF'
               }}
             >
-              <ChevronLeftIcon size={18} />
+              <ChevronLeftIcon size={20} />
             </button>
             <div style={{ display: 'flex', gap: 10 }}>
               <button
-                onClick={() => alert('Link copied to clipboard!')}
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.href);
+                  setToastMsg('Profile link copied!');
+                  setTimeout(() => setToastMsg(null), 3000);
+                }}
                 style={{
-                  width: 36,
-                  height: 36,
+                  width: 38,
+                  height: 38,
                   borderRadius: '50%',
-                  background: 'rgba(255, 255, 255, 0.08)',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
-                  backdropFilter: 'blur(8px)',
-                  WebkitBackdropFilter: 'blur(8px)',
+                  background: 'rgba(9, 9, 9, 0.6)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#FFFFFF',
                   cursor: 'pointer',
+                  color: '#FFFFFF'
                 }}
               >
-                <ShareIcon2 size={16} />
+                <ShareIcon2 size={18} />
               </button>
               <button
-                onClick={() => {
-                  setShowLogoutConfirm(true);
-                }}
+                onClick={() => setShowLogoutConfirm(true)}
                 style={{
-                  width: 36,
-                  height: 36,
+                  width: 38,
+                  height: 38,
                   borderRadius: '50%',
-                  background: 'rgba(255, 255, 255, 0.08)',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
-                  backdropFilter: 'blur(8px)',
-                  WebkitBackdropFilter: 'blur(8px)',
+                  background: 'rgba(9, 9, 9, 0.6)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#FFFFFF',
                   cursor: 'pointer',
+                  color: '#FFFFFF'
                 }}
               >
-                <LogoutIcon size={16} />
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
               </button>
             </div>
           </div>
         </div>
 
-        <div style={{ padding: '0 20px 16px', marginTop: -42, position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-          <div
-            className="premium-avatar-glow"
-            style={{
-              position: 'relative',
-              width: 86,
-              height: 86,
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #FF7A59 0%, #FF9E85 100%)',
-              padding: '2px',
-              marginBottom: 14,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'transform 0.3s ease',
-            }}
-          >
-            <img
-              src={userAvatar}
-              alt={displayName}
-              style={{
-                width: '100%',
-                height: '100%',
-                borderRadius: '50%',
-                objectFit: 'cover',
-                border: '3px solid #0B0D12',
-              }}
-            />
+        {/* ─── Profile Header Overlay Content ───────────────────────────────────── */}
+        <div style={{ padding: '0 20px', marginTop: -50, position: 'relative', zIndex: 5 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 14 }}>
+            {/* Avatar Details */}
+            <div style={{ position: 'relative', width: 92, height: 92 }}>
+              <img
+                src={userAvatar}
+                alt={displayName}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  border: '3.5px solid #FF7A5C',
+                  boxShadow: '0 0 20px rgba(255, 122, 92, 0.35)'
+                }}
+              />
+            </div>
+
+            {/* Action Buttons: Edit Profile */}
+            <div style={{ display: 'flex', gap: 10, paddingBottom: 6 }}>
+              <button
+                onClick={handleOpenEdit}
+                style={{
+                  width: 110,
+                  height: 38,
+                  borderRadius: 100,
+                  background: '#FFFFFF',
+                  border: 'none',
+                  color: '#090909',
+                  fontSize: 13.5,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 5
+                }}
+              >
+                <EditIcon size={13} />
+                Edit Profile
+              </button>
+            </div>
           </div>
 
-          <h1 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 3px', letterSpacing: -0.4, color: '#FFFFFF' }}>{displayName}</h1>
-          <p style={{ fontSize: 13, color: '#FF7A59', margin: '0 0 8px', fontWeight: 600, letterSpacing: -0.2 }}>{handleName}</p>
-          <p style={{ fontSize: 13, color: '#B8C0CC', margin: '0 0 20px', fontWeight: 500, lineHeight: 1.4, maxWidth: 280 }}>{userHeadline}</p>
+          {/* Identity Details */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+            <span style={{ fontSize: 18, fontWeight: 800 }}>{displayName}</span>
+            {user && user.isVerified && <VerifiedIcon />}
+          </div>
+          <div style={{ fontSize: 13, color: '#FF7A5C', fontWeight: 600, marginBottom: 6 }}>{handleName}</div>
+          <div style={{ fontSize: 13, color: '#A1A1AA', fontWeight: 500, marginBottom: 4 }}>
+            {user?.creatorType || 'Game Developer'}{user?.headline ? ` · ${user.headline}` : ''}
+          </div>
+          {userLocation && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#71717A', fontWeight: 500, marginBottom: 14 }}>
+              <span>📍</span> {userLocation}
+            </div>
+          )}
+
+          {/* Bio */}
+          {userBio && (
+            <p style={{
+              fontSize: 13,
+              color: '#E4E4E7',
+              lineHeight: 1.5,
+              margin: '0 0 16px',
+              whiteSpace: 'pre-line',
+              textAlign: 'left'
+            }}>
+              {userBio}
+            </p>
+          )}
+
+          {/* Links row */}
+          {(userWebsite || user?.github || user?.itchio || user?.behance || user?.artstation || user?.instagram || user?.linkedin) && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 16 }}>
+              {userWebsite && (
+                <a
+                  href={userWebsite.startsWith('http') ? userWebsite : `https://${userWebsite}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    padding: '6px 12px',
+                    borderRadius: 100,
+                    background: 'rgba(255, 255, 255, 0.04)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    color: '#A1A1AA',
+                    fontSize: 12,
+                    fontWeight: 500,
+                    textDecoration: 'none'
+                  }}
+                >
+                  <span>🔗</span> {userWebsite.replace(/(^\w+:|^)\/\//, '')}
+                </a>
+              )}
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {[
+                  { key: 'github', label: <FaGithub size={16} />, color: '#FFF', url: user?.github },
+                  { key: 'itchio', label: <SiItchdotio size={16} />, color: '#FA5C5C', url: user?.itchio },
+                  { key: 'behance', label: <FaBehance size={16} />, color: '#0057ff', url: user?.behance },
+                  { key: 'artstation', label: <FaArtstation size={16} />, color: '#13AFF0', url: user?.artstation },
+                  { key: 'instagram', label: <FaInstagram size={16} />, color: '#E1306C', url: user?.instagram },
+                  { key: 'linkedin', label: <FaLinkedin size={16} />, color: '#0A66C2', url: user?.linkedin }
+                ].filter(social => social.url).map((social, idx) => (
+                  <a
+                    key={idx}
+                    href={social.url.startsWith('http') ? social.url : `https://${social.url}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: '50%',
+                      background: 'rgba(255, 255, 255, 0.04)',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      textDecoration: 'none',
+                      color: social.color,
+                      fontSize: 12
+                    }}
+                  >
+                    {social.label}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Skill Chips */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginBottom: 24 }}>
-            {visibleSkills.map((skill) => (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 20 }}>
+            {visibleSkills.map((skill, idx) => (
               <div
-                key={skill.name}
-                className="press-scale"
+                key={idx}
                 style={{
-                  display: 'inline-flex',
+                  display: 'flex',
                   alignItems: 'center',
                   gap: 6,
                   padding: '6px 14px',
-                  background: 'rgba(255, 255, 255, 0.04)',
-                  border: '1px solid rgba(255, 255, 255, 0.06)',
                   borderRadius: 100,
-                  fontSize: 11,
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  fontSize: 12,
                   fontWeight: 600,
-                  color: '#E2E8F0',
-                  backdropFilter: 'blur(12px)',
-                  WebkitBackdropFilter: 'blur(12px)',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
+                  color: '#D4D4D8'
                 }}
               >
                 {skill.icon}
-                {skill.name}
+                <span>{skill.name}</span>
               </div>
             ))}
             {remainingSkillsCount > 0 && (
-              <div
-                className="press-scale"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  padding: '6px 12px',
-                  background: 'rgba(255, 255, 255, 0.04)',
-                  border: '1px solid rgba(255, 255, 255, 0.06)',
-                  borderRadius: 100,
-                  fontSize: 11,
-                  fontWeight: 600,
-                  color: '#FF7A59',
-                  backdropFilter: 'blur(12px)',
-                  WebkitBackdropFilter: 'blur(12px)',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                }}
-              >
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '6px 12px',
+                background: 'rgba(255, 255, 255, 0.04)',
+                border: '1px solid rgba(255, 255, 255, 0.06)',
+                borderRadius: 100,
+                fontSize: 11,
+                fontWeight: 600,
+                color: '#FF7A59'
+              }}>
                 +{remainingSkillsCount}
               </div>
             )}
-            {dynamicSkills.length === 0 && (
-              <div
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  padding: '6px 14px',
-                  background: 'rgba(255, 255, 255, 0.02)',
-                  border: '1px dashed rgba(255, 255, 255, 0.1)',
-                  borderRadius: 100,
-                  fontSize: 11,
-                  fontWeight: 600,
-                  color: '#8F98A8',
-                }}
-              >
-                No skills added yet
-              </div>
-            )}
           </div>
 
-          {/* Stats Card */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr 1fr',
-              width: '100%',
-              background: 'rgba(255, 255, 255, 0.02)',
-              border: '1px solid rgba(255, 255, 255, 0.06)',
-              borderRadius: 16,
-              padding: '16px 8px',
-              backdropFilter: 'blur(16px)',
-              WebkitBackdropFilter: 'blur(16px)',
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
-              marginBottom: 24,
-              position: 'relative',
-            }}
-          >
-            {/* Column 1 */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-              <GraduationCapIcon size={20} color="#FF7A59" />
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <span style={{ fontSize: 15, fontWeight: 800, color: '#FFFFFF' }}>{dynamicSkills.length}</span>
-                <span style={{ fontSize: 11, fontWeight: 600, color: '#8F98A8', marginTop: 1 }}>Skills</span>
+          {/* Stats Grid */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, 1fr)',
+            background: 'rgba(255, 255, 255, 0.02)',
+            border: '1px solid rgba(255, 255, 255, 0.05)',
+            borderRadius: 20,
+            padding: '16px 0',
+            textAlign: 'center',
+            marginBottom: 24
+          }}>
+            {[
+              { value: userProjects.length, label: 'Projects' },
+              { value: '1.2M', label: 'Followers' },
+              { value: '340', label: 'Following' },
+              { value: '12.4M', label: 'Views' }
+            ].map((stat, idx) => (
+              <div key={idx} style={{
+                borderRight: idx < 3 ? '1px solid rgba(255, 255, 255, 0.06)' : 'none'
+              }}>
+                <div style={{ fontSize: 18, fontWeight: 800, color: '#FF7A5C', marginBottom: 2 }}>{stat.value}</div>
+                <div style={{ fontSize: 11, color: '#71717A', fontWeight: 600 }}>{stat.label}</div>
               </div>
-            </div>
-            
-            {/* Divider 1 */}
-            <div style={{ position: 'absolute', left: '33.33%', top: '20%', bottom: '20%', width: 1, background: 'rgba(255, 255, 255, 0.06)' }} />
-
-            {/* Column 2 */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-              <CheckCircleIcon size={20} color="#A78BFA" />
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <span style={{ fontSize: 15, fontWeight: 800, color: '#FFFFFF' }}>{profileCompletion}%</span>
-                <span style={{ fontSize: 11, fontWeight: 600, color: '#8F98A8', marginTop: 1 }}>Complete</span>
-              </div>
-            </div>
-
-            {/* Divider 2 */}
-            <div style={{ position: 'absolute', left: '66.66%', top: '20%', bottom: '20%', width: 1, background: 'rgba(255, 255, 255, 0.06)' }} />
-
-            {/* Column 3 */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-              <CalendarIcon size={20} color="#34D399" />
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <span style={{ fontSize: 15, fontWeight: 800, color: '#FFFFFF', whiteSpace: 'nowrap' }}>{memberSince}</span>
-                <span style={{ fontSize: 11, fontWeight: 600, color: '#8F98A8', marginTop: 1 }}>Joined</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div style={{ display: 'flex', width: '100%', gap: 12, marginBottom: 24 }}>
-            <button
-              onClick={handleOpenEdit}
-              className="press-scale"
-              style={{
-                flex: 1.8,
-                height: 46,
-                borderRadius: 14,
-                background: 'linear-gradient(135deg, #FF7A59 0%, #FF9E85 100%)',
-                border: 'none',
-                color: '#FFFFFF',
-                fontSize: 14,
-                fontWeight: 700,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                boxShadow: '0 4px 16px rgba(255, 122, 89, 0.2)',
-                transition: 'all 0.2s ease',
-              }}
-            >
-              <EditIcon size={14} />
-              Edit Profile
-            </button>
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(window.location.href);
-                setToastMsg('Profile link copied!');
-                setTimeout(() => setToastMsg(null), 3000);
-              }}
-              className="press-scale"
-              style={{
-                flex: 1.2,
-                height: 46,
-                borderRadius: 14,
-                background: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                backdropFilter: 'blur(12px)',
-                WebkitBackdropFilter: 'blur(12px)',
-                color: '#FFFFFF',
-                fontSize: 14,
-                fontWeight: 700,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-                transition: 'all 0.2s ease',
-              }}
-            >
-              <ShareProfileIcon size={14} />
-              Share Profile
-            </button>
+            ))}
           </div>
         </div>
 
@@ -1489,6 +1527,8 @@ const ProfilePage = () => {
             flexDirection: 'column',
             padding: '24px 20px',
             overflowY: 'auto',
+            overflowX: 'hidden',
+            boxSizing: 'border-box'
           }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, paddingTop: 'env(safe-area-inset-top, 0px)' }}>
@@ -1633,6 +1673,75 @@ const ProfilePage = () => {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <label style={{ fontSize: 11, fontWeight: 700, color: '#B8C0CC', textTransform: 'uppercase' }}>Location</label>
+              <input type="text" value={editLocation} onChange={(event) => setEditLocation(event.target.value)} placeholder="e.g., Tokyo, Japan" style={fieldStyle} />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <label style={{ fontSize: 11, fontWeight: 700, color: '#B8C0CC', textTransform: 'uppercase' }}>Bio</label>
+              <textarea
+                value={editBio}
+                onChange={(event) => setEditBio(event.target.value)}
+                placeholder="Tell us about yourself..."
+                style={{
+                  ...fieldStyle,
+                  height: 80,
+                  padding: '12px 14px',
+                  resize: 'none',
+                  fontFamily: 'inherit',
+                }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <label style={{ fontSize: 11, fontWeight: 700, color: '#B8C0CC', textTransform: 'uppercase' }}>Creator Category</label>
+              <select value={editCreatorType} onChange={(event) => setEditCreatorType(event.target.value)} style={fieldStyle}>
+                <option value="Web Developer">Web Developer</option>
+                <option value="Game Developer">Game Developer</option>
+                <option value="2D Artist">2D Artist</option>
+                <option value="3D Artist">3D Artist</option>
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <label style={{ fontSize: 11, fontWeight: 700, color: '#B8C0CC', textTransform: 'uppercase' }}>Personal Website</label>
+              <input type="text" value={editWebsite} onChange={(event) => setEditWebsite(event.target.value)} placeholder="e.g., zara-neon.com" style={fieldStyle} />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={{ fontSize: 11, fontWeight: 700, color: '#B8C0CC', textTransform: 'uppercase' }}>GitHub Link</label>
+                <input type="text" value={editGithub} onChange={(event) => setEditGithub(event.target.value)} placeholder="github.com/username" style={fieldStyle} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={{ fontSize: 11, fontWeight: 700, color: '#B8C0CC', textTransform: 'uppercase' }}>Itch.io Link</label>
+                <input type="text" value={editItchio} onChange={(event) => setEditItchio(event.target.value)} placeholder="username.itch.io" style={fieldStyle} />
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={{ fontSize: 11, fontWeight: 700, color: '#B8C0CC', textTransform: 'uppercase' }}>Behance Link</label>
+                <input type="text" value={editBehance} onChange={(event) => setEditBehance(event.target.value)} placeholder="behance.net/username" style={fieldStyle} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={{ fontSize: 11, fontWeight: 700, color: '#B8C0CC', textTransform: 'uppercase' }}>ArtStation Link</label>
+                <input type="text" value={editArtstation} onChange={(event) => setEditArtstation(event.target.value)} placeholder="artstation.com/username" style={fieldStyle} />
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={{ fontSize: 11, fontWeight: 700, color: '#B8C0CC', textTransform: 'uppercase' }}>Instagram Link</label>
+                <input type="text" value={editInstagram} onChange={(event) => setEditInstagram(event.target.value)} placeholder="instagram.com/username" style={fieldStyle} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={{ fontSize: 11, fontWeight: 700, color: '#B8C0CC', textTransform: 'uppercase' }}>LinkedIn Link</label>
+                <input type="text" value={editLinkedin} onChange={(event) => setEditLinkedin(event.target.value)} placeholder="linkedin.com/in/username" style={fieldStyle} />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               <label style={{ fontSize: 11, fontWeight: 700, color: '#B8C0CC', textTransform: 'uppercase' }}>Skills (comma-separated)</label>
               <input type="text" value={editSkills} onChange={(event) => setEditSkills(event.target.value)} placeholder="Unity, C#, Blender" style={fieldStyle} />
             </div>
@@ -1691,6 +1800,8 @@ const ProfilePage = () => {
             flexDirection: 'column',
             padding: '24px 20px',
             overflowY: 'auto',
+            overflowX: 'hidden',
+            boxSizing: 'border-box'
           }}
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, paddingTop: 'env(safe-area-inset-top, 0px)' }}>

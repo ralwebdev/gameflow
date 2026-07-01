@@ -112,19 +112,23 @@ const CreatorProfilePage = () => {
     { id: 'Collaborations', label: 'Collaborate', icon: (color) => <UsersIcon size={18} color={color} /> },
     { id: 'Saved', label: 'Saved', icon: (color) => <BookmarkTabIcon size={18} color={color} /> },
   ];
-
   return (
-    <div style={{
-      width: '100%',
-      height: '100vh',
-      background: '#090909',
-      color: '#FFFFFF',
-      display: 'flex',
-      flexDirection: 'column',
-      overflowY: 'auto',
-      position: 'relative',
-      paddingBottom: 80
-    }}>
+    <div
+      className="scrollbar-hide"
+      style={{
+        width: '100%',
+        height: '100vh',
+        background: '#090909',
+        color: '#FFFFFF',
+        display: 'flex',
+        flexDirection: 'column',
+        overflowY: 'auto',
+        position: 'relative',
+        paddingBottom: 80,
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none'
+      }}
+    >
       <style>{`
         .press-scale {
           transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.2s ease;
